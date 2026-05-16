@@ -209,29 +209,50 @@ h1,h2,h3{font-family:"Cormorant Garamond",serif;font-weight:600;}
   font-style:italic;
 }
 
-/* History section */
-.history-grid{display:flex;flex-wrap:wrap;gap:6px;}
-.history-day{
-  width:32px;height:32px;
-  border-radius:4px;
-  background:var(--charcoal-3);
-  border:1px solid var(--border);
-  display:flex;align-items:center;justify-content:center;
-  font-size:0.65rem;font-weight:600;
-  color:var(--text-mid);
-  cursor:default;
-  position:relative;
+/* Calendar history */
+.cal-header{
+  display:flex;align-items:center;gap:6px;
+  margin-bottom:6px;
+  padding-left:96px;
 }
-.history-day.full{background:var(--gold);border-color:var(--gold);color:#000;}
-.history-day.partial{background:var(--charcoal-3);border-color:var(--gold);color:var(--gold);}
-.history-day.rest-logged{background:var(--slate);border-color:var(--slate);color:var(--text-mid);}
-.history-day[title]:hover::after{
-  content:attr(title);
-  position:absolute;bottom:36px;left:50%;transform:translateX(-50%);
+.cal-header-day{
+  width:20px;flex-shrink:0;
+  text-align:center;
+  font-size:0.58rem;font-weight:700;
+  color:var(--slate);
+}
+.cal-header-day.today-col{color:var(--gold);}
+
+.cal-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.cal-row:last-child{margin-bottom:0;}
+.cal-label{
+  width:90px;flex-shrink:0;
+  display:flex;align-items:center;gap:6px;
+  font-size:0.7rem;font-weight:700;
+  color:var(--text-mid);
+  white-space:nowrap;overflow:hidden;
+}
+.cal-label .licon{font-size:1rem;}
+.cal-cell{
+  width:20px;height:20px;flex-shrink:0;
+  border-radius:3px;
+  background:var(--charcoal-3);
+  border:1px solid rgba(255,255,255,0.04);
+  position:relative;
+  cursor:default;
+  transition:transform 0.1s;
+}
+.cal-cell:hover{transform:scale(1.3);z-index:5;}
+.cal-cell.done{background:var(--gold);border-color:var(--gold);}
+.cal-cell.rest{background:var(--slate);border-color:var(--slate);}
+.cal-cell.today-col{border-color:rgba(198,149,42,0.5);}
+.cal-cell[data-tip]:hover::after{
+  content:attr(data-tip);
+  position:absolute;bottom:26px;left:50%;transform:translateX(-50%);
   background:#000;border:1px solid var(--border);
   border-radius:4px;padding:4px 8px;
-  font-size:0.65rem;white-space:nowrap;color:#fff;
-  pointer-events:none;z-index:10;
+  font-size:0.62rem;white-space:nowrap;color:#fff;
+  pointer-events:none;z-index:20;
 }
 
 /* Reset */
@@ -343,10 +364,19 @@ h1,h2,h3{font-family:"Cormorant Garamond",serif;font-weight:600;}
     <div class="notes-save" id="notesSaved"></div>
   </div>
 
-  <!-- 30-day history -->
+  <!-- Per-goal calendar -->
   <div class="card">
-    <div class="card-title">Last 30 Days</div>
-    <div class="history-grid" id="historyGrid"></div>
+    <div class="card-title">Last 30 Days — By Goal</div>
+    <div id="calHeader" class="cal-header"></div>
+    <div class="cal-row" id="cal-gym">
+      <div class="cal-label"><span class="licon">🏋️</span> Gym</div>
+    </div>
+    <div class="cal-row" id="cal-eat">
+      <div class="cal-label"><span class="licon">🥗</span> Eat</div>
+    </div>
+    <div class="cal-row" id="cal-business">
+      <div class="cal-label"><span class="licon">💼</span> Biz</div>
+    </div>
   </div>
 
   <div class="reset-link" id="resetDay">Reset today's check-ins</div>
@@ -528,30 +558,45 @@ function renderStreaks(){
 }
 
 function renderHistory(){
-  const grid = document.getElementById('historyGrid');
-  const cells = [];
+  const days = [];
   for(let i=29; i>=0; i--){
     const date = new Date();
     date.setDate(date.getDate() - i);
-    const key = date.toISOString().slice(0,10);
-    const day = data[key];
-    const label = date.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    const dayNum = date.getDate();
-
-    let cls = '', title = label;
-    if(day){
-      if(day.rest){
-        cls = 'rest-logged';
-        title = label + ' — Rest day';
-      } else {
-        const done = (day.gym?1:0)+(day.eat?1:0)+(day.business?1:0);
-        if(done === 3){ cls='full'; title=label+' — Perfect day'; }
-        else if(done > 0){ cls='partial'; title=label+` — ${done}/3`; }
-      }
-    }
-    cells.push(`<div class="history-day ${cls}" title="${title}">${dayNum}</div>`);
+    days.push({ key: date.toISOString().slice(0,10), date, isToday: i===0 });
   }
-  grid.innerHTML = cells.join('');
+
+  // Header row: day numbers
+  document.getElementById('calHeader').innerHTML = days.map(({date, isToday}) =>
+    `<div class="cal-header-day${isToday?' today-col':''}">${date.getDate()}</div>`
+  ).join('');
+
+  // Each goal row
+  const goals = [
+    { id:'cal-gym',      key:'gym' },
+    { id:'cal-eat',      key:'eat' },
+    { id:'cal-business', key:'business' }
+  ];
+
+  goals.forEach(({id, key}) => {
+    const row = document.getElementById(id);
+    // remove old cells but keep the label
+    Array.from(row.querySelectorAll('.cal-cell')).forEach(el => el.remove());
+    days.forEach(({key: dateKey, date, isToday}) => {
+      const day = data[dateKey];
+      const label = date.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      let cls = isToday ? 'today-col' : '';
+      let tip = label;
+      if(day){
+        if(day.rest){ cls += ' rest'; tip = label + ' — Rest day'; }
+        else if(day[key]){ cls += ' done'; tip = label + ' ✓'; }
+        else { tip = label + ' — missed'; }
+      }
+      const cell = document.createElement('div');
+      cell.className = 'cal-cell ' + cls;
+      cell.setAttribute('data-tip', tip);
+      row.appendChild(cell);
+    });
+  });
 }
 
 // Notes restore
