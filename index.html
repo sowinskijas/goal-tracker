@@ -365,8 +365,11 @@ h1,h2,h3{font-family:"Cormorant Garamond",serif;font-weight:600;}
   </div>
 
   <!-- Per-goal calendar -->
-  <div class="card">
-    <div class="card-title">Last 30 Days — By Goal</div>
+  <div class="card" id="calCard" style="cursor:pointer;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <div class="card-title" style="margin-bottom:0;" id="calTitle">This Week — By Goal</div>
+      <div id="calToggle" style="font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);">See Month ▾</div>
+    </div>
     <div id="calHeader" class="cal-header"></div>
     <div class="cal-row" id="cal-gym">
       <div class="cal-label"><span class="licon">🏋️</span> Gym</div>
@@ -557,9 +560,19 @@ function renderStreaks(){
   document.getElementById('gymStreak').textContent = gym;
 }
 
+let calExpanded = false;
+
+document.getElementById('calCard').addEventListener('click', () => {
+  calExpanded = !calExpanded;
+  document.getElementById('calToggle').textContent = calExpanded ? 'See Week ▴' : 'See Month ▾';
+  document.getElementById('calTitle').textContent = calExpanded ? 'Last 30 Days — By Goal' : 'This Week — By Goal';
+  renderHistory();
+});
+
 function renderHistory(){
+  const count = calExpanded ? 30 : 7;
   const days = [];
-  for(let i=29; i>=0; i--){
+  for(let i=count-1; i>=0; i--){
     const date = new Date();
     date.setDate(date.getDate() - i);
     days.push({ key: date.toISOString().slice(0,10), date, isToday: i===0 });
