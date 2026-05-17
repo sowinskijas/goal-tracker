@@ -1361,7 +1361,7 @@ document.getElementById('visionKeySave').addEventListener('click',()=>{
   document.getElementById('visionKeyRow').style.display='none';
 });
 
-function compressImage(file, maxPx=1200, quality=0.82){
+function compressImage(file, maxPx=2000, quality=0.92){
   return new Promise((res,rej)=>{
     const img=new Image();
     const url=URL.createObjectURL(file);
@@ -1387,8 +1387,10 @@ async function readWithGoogleVision(file){
   fd.append('file', compressed, 'label.jpg');
   fd.append('apikey', key);
   fd.append('isOverlayRequired', 'false');
-  fd.append('OCREngine', '2');
+  fd.append('OCREngine', '1');
   fd.append('language', 'eng');
+  fd.append('scale', 'true');
+  fd.append('isTable', 'false');
   const resp = await fetch('https://api.ocr.space/parse/image', {method:'POST', body:fd});
   const json = await resp.json();
   if(json.IsErroredOnProcessing) throw new Error(json.ErrorMessage?.[0] || 'OCR failed');
