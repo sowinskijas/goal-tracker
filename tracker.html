@@ -6,7 +6,6 @@
 <title>Daily Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
 :root{
   --gold:#C6952A;--gold-light:#DDB96A;--gold-pale:#f0e4c8;
@@ -625,7 +624,14 @@ h1,h2,h3{font-family:"Cormorant Garamond",serif;font-weight:600;}
   <!-- Ingredient Scanner -->
   <div class="card">
     <div class="card-title">Ingredient Scanner</div>
-    <p class="scanner-desc">Snap a photo of a food label, then type or paste the ingredients to get a health score.</p>
+    <p class="scanner-desc">Snap a photo of a food label — Google Vision will read it automatically, then score the ingredients.</p>
+    <div id="visionKeyRow" style="display:none;margin-bottom:14px;">
+      <label class="scanner-label">Google Vision API Key</label>
+      <div style="display:flex;gap:8px;">
+        <input type="password" id="visionKeyInput" class="scanner-textarea" style="min-height:0;padding:10px 14px;margin-bottom:0;" placeholder="AIza...">
+        <button class="log-btn" id="visionKeySave">Save</button>
+      </div>
+    </div>
 
     <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none">
     <div class="photo-zone" id="photoZone">
@@ -1341,6 +1347,46 @@ const photoRetake= document.getElementById('photoRetake');
 photoZone.addEventListener('click', () => photoInput.click());
 photoRetake.addEventListener('click', e => { e.stopPropagation(); photoInput.click(); });
 
+const GVISION_KEY = 'tracker_gvision_key';
+
+function getVisionKey(){ return localStorage.getItem(GVISION_KEY)||''; }
+
+// Show key row if no key saved
+if(!getVisionKey()) document.getElementById('visionKeyRow').style.display='block';
+
+document.getElementById('visionKeySave').addEventListener('click',()=>{
+  const val = document.getElementById('visionKeyInput').value.trim();
+  if(!val) return;
+  localStorage.setItem(GVISION_KEY, val);
+  document.getElementById('visionKeyRow').style.display='none';
+});
+
+function toBase64(file){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>res(r.result.split(',')[1]);
+    r.onerror=rej;
+    r.readAsDataURL(file);
+  });
+}
+
+async function readWithGoogleVision(file){
+  const key = getVisionKey();
+  if(!key) throw new Error('no_key');
+  const b64 = await toBase64(file);
+  const resp = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${key}`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({requests:[{
+      image:{content:b64},
+      features:[{type:'TEXT_DETECTION',maxResults:1}]
+    }]})
+  });
+  const json = await resp.json();
+  if(json.error) throw new Error(json.error.message);
+  return json.responses?.[0]?.textAnnotations?.[0]?.description || '';
+}
+
 photoInput.addEventListener('change', async () => {
   const file = photoInput.files[0];
   if(!file) return;
@@ -1352,27 +1398,37 @@ photoInput.addEventListener('change', async () => {
   photoZone.querySelector('.photo-zone-label').style.display = 'none';
   photoRetake.style.display = 'block';
 
-  // Auto-read ingredients via OCR
   const ta = document.getElementById('ingredientsInput');
   ta.value = '';
-  ta.placeholder = 'Reading label… this takes a few seconds';
   ta.disabled = true;
   document.getElementById('scoreBtn').disabled = true;
 
+  if(!getVisionKey()){
+    document.getElementById('visionKeyRow').style.display='block';
+    ta.placeholder = 'Enter your Vision API key above first';
+    ta.disabled = false;
+    document.getElementById('scoreBtn').disabled = false;
+    return;
+  }
+
+  ta.placeholder = 'Reading label with Google Vision…';
+
   try {
-    const { data: { text } } = await Tesseract.recognize(url, 'eng');
-    // Extract the ingredients section if possible
+    const text = await readWithGoogleVision(file);
     const lower = text.toLowerCase();
     const idx = lower.search(/ingredients?\s*:/);
-    const extracted = idx >= 0 ? text.slice(idx) : text;
-    ta.value = extracted.trim();
+    ta.value = (idx >= 0 ? text.slice(idx) : text).trim();
     ta.placeholder = 'Ingredients auto-filled — edit if needed';
   } catch(e) {
-    ta.placeholder = 'Could not read label — please type the ingredients manually';
+    if(e.message === 'no_key'){
+      ta.placeholder = 'Enter your Vision API key above';
+      document.getElementById('visionKeyRow').style.display='block';
+    } else {
+      ta.placeholder = 'Could not read label — type ingredients manually';
+    }
   } finally {
     ta.disabled = false;
     document.getElementById('scoreBtn').disabled = false;
-    ta.focus();
   }
 });
 
