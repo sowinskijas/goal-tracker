@@ -1424,7 +1424,7 @@ photoInput.addEventListener('change', async () => {
       ta.placeholder = 'Enter your Vision API key above';
       document.getElementById('visionKeyRow').style.display='block';
     } else {
-      ta.placeholder = 'Could not read label — type ingredients manually';
+      ta.placeholder = 'Vision error: ' + e.message + ' — type ingredients manually or retake photo';
     }
   } finally {
     ta.disabled = false;
