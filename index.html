@@ -602,10 +602,11 @@ document.getElementById('dateDisplay').textContent = d.toLocaleDateString('en-US
 
 let data = getData();
 
-// One-time seed for May 16 — only sets it if that day has no data yet
-if(!data['2026-05-16']){
+// One-time seed for May 16 — runs once per device, won't re-run after
+if(!localStorage.getItem('seed_may16_done')){
   data['2026-05-16']={gym:true,soccer:false,eat:true,business:true,rest:false,weight:116,notes:''};
   saveData(data);
+  localStorage.setItem('seed_may16_done','1');
 }
 
 let today = getDay(data,TODAY);
