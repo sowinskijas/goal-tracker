@@ -624,11 +624,11 @@ h1,h2,h3{font-family:"Cormorant Garamond",serif;font-weight:600;}
   <!-- Ingredient Scanner -->
   <div class="card">
     <div class="card-title">Ingredient Scanner</div>
-    <p class="scanner-desc">Snap a photo of a food label — Google Vision will read it automatically, then score the ingredients.</p>
+    <p class="scanner-desc">Snap a photo of a food label — OCR will read it automatically, then score the ingredients. Free API key at <strong>ocr.space/OCRAPI</strong></p>
     <div id="visionKeyRow" style="display:none;margin-bottom:14px;">
-      <label class="scanner-label">Google Vision API Key</label>
+      <label class="scanner-label">OCR.space API Key</label>
       <div style="display:flex;gap:8px;">
-        <input type="password" id="visionKeyInput" class="scanner-textarea" style="min-height:0;padding:10px 14px;margin-bottom:0;" placeholder="AIza...">
+        <input type="password" id="visionKeyInput" class="scanner-textarea" style="min-height:0;padding:10px 14px;margin-bottom:0;" placeholder="K8...">
         <button class="log-btn" id="visionKeySave">Save</button>
       </div>
     </div>
@@ -1374,17 +1374,16 @@ async function readWithGoogleVision(file){
   const key = getVisionKey();
   if(!key) throw new Error('no_key');
   const b64 = await toBase64(file);
-  const resp = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${key}`,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({requests:[{
-      image:{content:b64},
-      features:[{type:'TEXT_DETECTION',maxResults:1}]
-    }]})
-  });
+  const fd = new FormData();
+  fd.append('base64Image', 'data:' + file.type + ';base64,' + b64);
+  fd.append('apikey', key);
+  fd.append('isOverlayRequired', 'false');
+  fd.append('OCREngine', '2');
+  fd.append('language', 'eng');
+  const resp = await fetch('https://api.ocr.space/parse/image', {method:'POST', body:fd});
   const json = await resp.json();
-  if(json.error) throw new Error(json.error.message);
-  return json.responses?.[0]?.textAnnotations?.[0]?.description || '';
+  if(json.IsErroredOnProcessing) throw new Error(json.ErrorMessage?.[0] || 'OCR failed');
+  return json.ParsedResults?.[0]?.ParsedText || '';
 }
 
 photoInput.addEventListener('change', async () => {
