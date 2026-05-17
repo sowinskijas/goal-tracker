@@ -266,8 +266,26 @@ h1,h2,h3{font-family:"Cormorant Garamond",serif;font-weight:600;}
 .ai-generate-btn:active{transform:scale(0.98);}
 .ai-generate-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
 
-/* ── Calendar ── */
-.cal-header{display:flex;align-items:center;gap:5px;margin-bottom:8px;padding-left:96px;}
+/* ── Workout picker ── */
+.workout-wrap{border-bottom:1px solid rgba(255,255,255,0.05);}
+.workout-wrap .goal-item{border-bottom:none;padding-bottom:14px;}
+.workout-picker{
+  display:none;gap:8px;padding:10px 0 14px;
+}
+.workout-picker.open{display:flex;}
+.wp-btn{
+  flex:1;padding:9px 4px;
+  background:var(--charcoal-3);border:1px solid var(--border);
+  border-radius:6px;color:var(--text-mid);
+  font-family:"Raleway",sans-serif;font-size:0.75rem;font-weight:700;
+  letter-spacing:0.04em;cursor:pointer;transition:all 0.15s;text-align:center;
+}
+.wp-btn.sel{background:rgba(198,149,42,0.18);border-color:var(--gold);color:var(--gold-light);}
+.wp-btn:hover:not(.sel){border-color:var(--border-hover);color:var(--text-light);}
+.wp-btn:active{transform:scale(0.97);}
+
+/* ── Calendar week view ── */
+.cal-header{display:flex;align-items:center;gap:5px;margin-bottom:8px;padding-left:82px;}
 .cal-header-day{
   width:20px;flex-shrink:0;text-align:center;
   font-size:0.56rem;font-weight:700;color:var(--slate);
@@ -276,10 +294,10 @@ h1,h2,h3{font-family:"Cormorant Garamond",serif;font-weight:600;}
 .cal-row{display:flex;align-items:center;gap:5px;margin-bottom:6px;}
 .cal-row:last-child{margin-bottom:0;}
 .cal-label{
-  width:90px;flex-shrink:0;display:flex;align-items:center;gap:6px;
-  font-size:0.68rem;font-weight:700;color:var(--text-mid);white-space:nowrap;
+  width:76px;flex-shrink:0;display:flex;align-items:center;gap:5px;
+  font-size:0.66rem;font-weight:700;color:var(--text-mid);white-space:nowrap;
 }
-.cal-label .licon{font-size:0.9rem;}
+.cal-label .licon{font-size:0.88rem;}
 .cal-cell{
   width:20px;height:20px;flex-shrink:0;border-radius:3px;
   background:var(--charcoal-3);border:1px solid rgba(255,255,255,0.04);
@@ -297,6 +315,37 @@ h1,h2,h3{font-family:"Cormorant Garamond",serif;font-weight:600;}
   font-size:0.6rem;white-space:nowrap;color:#fff;
   pointer-events:none;z-index:20;
 }
+
+/* ── Calendar month view ── */
+.month-grid{display:none;grid-template-columns:repeat(7,1fr);gap:4px;}
+.month-grid.open{display:grid;}
+.month-dow{
+  font-size:0.54rem;font-weight:700;text-align:center;
+  color:var(--slate);padding:3px 0 8px;
+}
+.month-cell{
+  aspect-ratio:1;border-radius:5px;
+  background:var(--charcoal-3);border:1px solid transparent;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;transition:transform 0.12s,box-shadow 0.12s;
+  gap:3px;
+}
+.month-cell:hover{transform:scale(1.1);z-index:5;box-shadow:0 3px 12px rgba(0,0,0,0.5);}
+.month-cell.m-empty{background:transparent;pointer-events:none;border:none;}
+.month-cell.m-future{opacity:0.2;pointer-events:none;}
+.month-cell.m-today{border-color:rgba(198,149,42,0.55);}
+.month-cell.m-all{background:rgba(198,149,42,0.22);}
+.month-cell.m-some{background:rgba(198,149,42,0.08);}
+.month-cell.m-rest{background:rgba(44,52,64,0.7);opacity:0.55;}
+.month-num{
+  font-size:0.6rem;font-weight:700;color:var(--text-light);line-height:1;
+}
+.month-cell.m-today .month-num{color:var(--gold);}
+.month-cell.m-rest .month-num{color:var(--text-mid);}
+.month-dots{display:flex;gap:2px;}
+.mdot{width:4px;height:4px;border-radius:50%;background:var(--charcoal-2);flex-shrink:0;}
+.mdot.m-hit{background:var(--gold);}
+.mdot.m-rest{background:var(--slate);opacity:0.7;}
 
 /* ── Day Modal ── */
 .modal-overlay{
@@ -396,29 +445,23 @@ h1,h2,h3{font-family:"Cormorant Garamond",serif;font-weight:600;}
   <div class="card">
     <div class="card-title">Today's Goals</div>
 
-    <div class="goal-item" id="goal-gym" data-key="gym">
-      <div class="goal-icon">🏋️</div>
-      <div class="goal-info">
-        <div class="goal-name">Gym</div>
-        <div class="goal-sub" id="gym-sub">Lift, train, or workout</div>
+    <div class="workout-wrap">
+      <div class="goal-item" id="goal-workout">
+        <div class="goal-icon" id="workout-icon">🏋️</div>
+        <div class="goal-info">
+          <div class="goal-name">Workout</div>
+          <div class="goal-sub" id="workout-sub">Tap to log gym or soccer</div>
+        </div>
+        <div class="checkbox" id="workout-check">
+          <svg viewBox="0 0 13 10" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1.5,5 5,8.5 11.5,1.5"/>
+          </svg>
+        </div>
       </div>
-      <div class="checkbox">
-        <svg viewBox="0 0 13 10" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="1.5,5 5,8.5 11.5,1.5"/>
-        </svg>
-      </div>
-    </div>
-
-    <div class="goal-item" id="goal-soccer" data-key="soccer">
-      <div class="goal-icon">⚽</div>
-      <div class="goal-info">
-        <div class="goal-name">Soccer</div>
-        <div class="goal-sub" id="soccer-sub">Play or practice soccer</div>
-      </div>
-      <div class="checkbox">
-        <svg viewBox="0 0 13 10" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="1.5,5 5,8.5 11.5,1.5"/>
-        </svg>
+      <div class="workout-picker" id="workoutPicker">
+        <button class="wp-btn" id="wp-gym">🏋️ Gym</button>
+        <button class="wp-btn" id="wp-soccer">⚽ Soccer</button>
+        <button class="wp-btn" id="wp-both">🔥 Both</button>
       </div>
     </div>
 
@@ -503,25 +546,27 @@ h1,h2,h3{font-family:"Cormorant Garamond",serif;font-weight:600;}
     <button class="ai-generate-btn" id="aiGenerateBtn">✦ Generate Today's Debrief</button>
   </div>
 
-  <!-- Per-goal calendar -->
-  <div class="card" id="calCard" style="cursor:pointer;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-      <div class="card-title" style="margin-bottom:0;" id="calTitle">This Week — By Goal</div>
+  <!-- Calendar -->
+  <div class="card" id="calCard">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;cursor:pointer;" id="calToggleRow">
+      <div class="card-title" style="margin-bottom:0;" id="calTitle">This Week</div>
       <div id="calToggle" style="font-size:0.66rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold);">See Month ▾</div>
     </div>
-    <div id="calHeader" class="cal-header"></div>
-    <div class="cal-row" id="cal-gym">
-      <div class="cal-label"><span class="licon">🏋️</span> Gym</div>
+    <!-- Week view -->
+    <div id="weekView">
+      <div id="calHeader" class="cal-header"></div>
+      <div class="cal-row" id="cal-workout">
+        <div class="cal-label"><span class="licon">🏋️</span> Workout</div>
+      </div>
+      <div class="cal-row" id="cal-eat">
+        <div class="cal-label"><span class="licon">🥗</span> Eat</div>
+      </div>
+      <div class="cal-row" id="cal-business">
+        <div class="cal-label"><span class="licon">💼</span> Biz</div>
+      </div>
     </div>
-    <div class="cal-row" id="cal-soccer">
-      <div class="cal-label"><span class="licon">⚽</span> Soccer</div>
-    </div>
-    <div class="cal-row" id="cal-eat">
-      <div class="cal-label"><span class="licon">🥗</span> Eat</div>
-    </div>
-    <div class="cal-row" id="cal-business">
-      <div class="cal-label"><span class="licon">💼</span> Biz</div>
-    </div>
+    <!-- Month view -->
+    <div id="monthGrid" class="month-grid"></div>
   </div>
 
   <div class="reset-link" id="resetDay">Reset today's check-ins</div>
@@ -561,35 +606,59 @@ let today = getDay(data,TODAY);
 // Rest toggle
 const restToggle = document.getElementById('restToggle');
 restToggle.checked = today.rest;
-updateGymGoal();
+updateWorkoutGoal();
 restToggle.addEventListener('change',()=>{
   today.rest = restToggle.checked;
-  if(today.rest) today.gym = false;
-  saveToday(); updateGymGoal(); render();
+  if(today.rest){ today.gym=false; today.soccer=false; }
+  saveToday(); updateWorkoutGoal(); render();
 });
 
-function updateGymGoal(){
-  const gymEl = document.getElementById('goal-gym');
-  const socEl = document.getElementById('goal-soccer');
-  const gymSub = document.getElementById('gym-sub');
-  const socSub = document.getElementById('soccer-sub');
+function updateWorkoutGoal(){
+  const wrap = document.getElementById('goal-workout');
+  const icon = document.getElementById('workout-icon');
+  const sub  = document.getElementById('workout-sub');
+  const picker = document.getElementById('workoutPicker');
   if(today.rest){
-    gymEl.classList.add('disabled'); socEl.classList.add('disabled');
-    gymSub.textContent='Rest day — recovery is part of the process';
-    socSub.textContent='Rest day — let the body recover';
+    wrap.classList.add('disabled');
+    sub.textContent='Rest day — recovery is part of the process';
+    picker.classList.remove('open');
   } else {
-    gymEl.classList.remove('disabled'); socEl.classList.remove('disabled');
-    gymSub.textContent='Lift, train, or workout';
-    socSub.textContent='Play or practice soccer';
+    wrap.classList.remove('disabled');
+    const both = today.gym && today.soccer;
+    if(both){ icon.textContent='🔥'; sub.textContent='Gym + Soccer — double day!'; }
+    else if(today.gym){ icon.textContent='🏋️'; sub.textContent='Gym done ✓'; }
+    else if(today.soccer){ icon.textContent='⚽'; sub.textContent='Soccer done ✓'; }
+    else { icon.textContent='🏋️'; sub.textContent='Tap to log gym or soccer'; }
   }
+  document.getElementById('wp-gym').classList.toggle('sel', !!today.gym);
+  document.getElementById('wp-soccer').classList.toggle('sel', !!today.soccer);
+  document.getElementById('wp-both').classList.toggle('sel', !!(today.gym && today.soccer));
 }
 
-// Goals
-['gym','soccer','eat','business'].forEach(key=>{
+// Workout goal click → open/close picker
+document.getElementById('goal-workout').addEventListener('click',()=>{
+  if(today.rest) return;
+  document.getElementById('workoutPicker').classList.toggle('open');
+});
+
+// Picker buttons
+document.getElementById('wp-gym').addEventListener('click',e=>{
+  e.stopPropagation(); today.gym=!today.gym; saveToday(); updateWorkoutGoal(); render();
+});
+document.getElementById('wp-soccer').addEventListener('click',e=>{
+  e.stopPropagation(); today.soccer=!today.soccer; saveToday(); updateWorkoutGoal(); render();
+});
+document.getElementById('wp-both').addEventListener('click',e=>{
+  e.stopPropagation();
+  const allOn = today.gym && today.soccer;
+  today.gym = !allOn; today.soccer = !allOn;
+  saveToday(); updateWorkoutGoal(); render();
+});
+
+// Other goals
+['eat','business'].forEach(key=>{
   document.getElementById('goal-'+key).addEventListener('click',()=>{
-    if((key==='gym'||key==='soccer')&&today.rest) return;
-    today[key]=!today[key];
-    saveToday(); render();
+    today[key]=!today[key]; saveToday(); render();
   });
 });
 
@@ -619,7 +688,8 @@ document.getElementById('resetDay').addEventListener('click',()=>{
   if(!confirm('Reset today\'s check-ins?')) return;
   today={gym:false,soccer:false,eat:false,business:false,rest:false,weight:today.weight,notes:today.notes};
   restToggle.checked=false;
-  saveToday(); render(); updateGymGoal();
+  document.getElementById('workoutPicker').classList.remove('open');
+  saveToday(); render(); updateWorkoutGoal();
 });
 
 function saveToday(){ data[TODAY]=today; saveData(data); }
@@ -627,7 +697,8 @@ function saveToday(){ data[TODAY]=today; saveData(data); }
 function workoutDone(day){ return !!(day.gym||day.soccer); }
 
 function render(){
-  ['gym','soccer','eat','business'].forEach(key=>document.getElementById('goal-'+key).classList.toggle('checked',!!today[key]));
+  ['eat','business'].forEach(key=>document.getElementById('goal-'+key).classList.toggle('checked',!!today[key]));
+  document.getElementById('goal-workout').classList.toggle('checked', workoutDone(today));
   const total = today.rest?2:3;
   const done = (today.rest?0:(workoutDone(today)?1:0))+(today.eat?1:0)+(today.business?1:0);
   document.getElementById('progressLabel').textContent=done+' / '+total;
@@ -731,25 +802,32 @@ function renderStreaks(){
 
 // Calendar
 let calExpanded=false;
-document.getElementById('calCard').addEventListener('click',()=>{
+document.getElementById('calToggleRow').addEventListener('click',()=>{
   calExpanded=!calExpanded;
   document.getElementById('calToggle').textContent=calExpanded?'See Week ▴':'See Month ▾';
-  document.getElementById('calTitle').textContent=calExpanded?'Last 30 Days — By Goal':'This Week — By Goal';
-  renderHistory();
+  document.getElementById('calTitle').textContent=calExpanded?'This Month':'This Week';
+  document.getElementById('weekView').style.display=calExpanded?'none':'block';
+  document.getElementById('monthGrid').classList.toggle('open',calExpanded);
+  if(calExpanded) renderMonthView(); else renderWeekView();
 });
 
-function renderHistory(){
-  const count=calExpanded?30:7;
+function renderHistory(){ calExpanded?renderMonthView():renderWeekView(); }
+
+function renderWeekView(){
   const days=[];
-  for(let i=count-1;i>=0;i--){
+  for(let i=6;i>=0;i--){
     const date=new Date(); date.setDate(date.getDate()-i);
     days.push({key:date.toISOString().slice(0,10),date,isToday:i===0});
   }
   document.getElementById('calHeader').innerHTML=days.map(({date,isToday})=>
     `<div class="cal-header-day${isToday?' today-col':''}">${date.getDate()}</div>`
   ).join('');
-  const goals=[{id:'cal-gym',key:'gym'},{id:'cal-soccer',key:'soccer'},{id:'cal-eat',key:'eat'},{id:'cal-business',key:'business'}];
-  goals.forEach(({id,key})=>{
+  const goals=[
+    {id:'cal-workout', fn:(d)=>workoutDone(d)},
+    {id:'cal-eat',     fn:(d)=>d.eat},
+    {id:'cal-business',fn:(d)=>d.business}
+  ];
+  goals.forEach(({id,fn})=>{
     const row=document.getElementById(id);
     Array.from(row.querySelectorAll('.cal-cell')).forEach(el=>el.remove());
     days.forEach(({key:dateKey,date,isToday})=>{
@@ -757,8 +835,8 @@ function renderHistory(){
       const label=date.toLocaleDateString('en-US',{month:'short',day:'numeric'});
       let cls=isToday?'today-col':'',tip=label;
       if(day){
-        if(day.rest){cls+=' rest';tip=label+' — Rest day';}
-        else if(day[key]){cls+=' done';tip=label+' ✓';}
+        if(day.rest){cls+=' rest';tip=label+' — Rest';}
+        else if(fn(day)){cls+=' done';tip=label+' ✓';}
         else{tip=label+' — missed';}
       }
       const cell=document.createElement('div');
@@ -768,6 +846,59 @@ function renderHistory(){
       row.appendChild(cell);
     });
   });
+}
+
+function renderMonthView(){
+  const now=new Date();
+  const year=now.getFullYear(), month=now.getMonth();
+  const firstDay=new Date(year,month,1);
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const grid=document.getElementById('monthGrid');
+  grid.innerHTML='';
+
+  // Day-of-week headers
+  ['S','M','T','W','T','F','S'].forEach(d=>{
+    const el=document.createElement('div');
+    el.className='month-dow'; el.textContent=d; grid.appendChild(el);
+  });
+
+  // Leading empty cells
+  for(let i=0;i<firstDay.getDay();i++){
+    const el=document.createElement('div'); el.className='month-cell m-empty'; grid.appendChild(el);
+  }
+
+  for(let d=1;d<=daysInMonth;d++){
+    const dt=new Date(year,month,d);
+    const key=dt.toISOString().slice(0,10);
+    const dayData=data[key];
+    const isToday=key===TODAY;
+    const isFuture=dt.setHours(0,0,0,0)>now.setHours(0,0,0,0);
+
+    let cls='month-cell';
+    if(isToday) cls+=' m-today';
+    if(isFuture) cls+=' m-future';
+
+    let dotsHtml='';
+    if(!isFuture&&dayData){
+      const wo=workoutDone(dayData);
+      const doneCount=(dayData.rest?0:(wo?1:0))+(dayData.eat?1:0)+(dayData.business?1:0);
+      const total=dayData.rest?2:3;
+      if(dayData.rest) cls+=' m-rest';
+      else if(doneCount>=total) cls+=' m-all';
+      else if(doneCount>0) cls+=' m-some';
+
+      dotsHtml='<div class="month-dots">'+
+        [{done:dayData.rest||wo,rest:dayData.rest},{done:dayData.eat,rest:false},{done:dayData.business,rest:false}]
+        .map(g=>`<div class="mdot${g.rest?' m-rest':g.done?' m-hit':''}"></div>`).join('')+
+      '</div>';
+    }
+
+    const cell=document.createElement('div');
+    cell.className=cls;
+    cell.innerHTML=`<div class="month-num">${d}</div>${dotsHtml}`;
+    if(!isFuture) cell.addEventListener('click',e=>{e.stopPropagation();openModal(key);});
+    grid.appendChild(cell);
+  }
 }
 
 // Day modal
@@ -782,15 +913,23 @@ function openModal(dateKey){
   const day=data[dateKey];
   document.getElementById('modalDate').textContent=date.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})+(isToday?' — Today':'');
   document.getElementById('modalRestBadge').style.display=day&&day.rest?'inline-block':'none';
-  const goalDefs=[{key:'gym',icon:'🏋️',name:'Gym'},{key:'soccer',icon:'⚽',name:'Soccer'},{key:'eat',icon:'🥗',name:'Eat Healthy'},{key:'business',icon:'💼',name:'Work on Business'}];
-  document.getElementById('modalGoals').innerHTML=goalDefs.map(({key,icon,name})=>{
-    let s,c;
-    if(!day){s='No data';c='na';}
-    else if((key==='gym'||key==='soccer')&&day.rest){s='Rest day';c='na';}
-    else if(day[key]){s='Completed ✓';c='done';}
-    else{s='Missed';c='missed';}
-    return `<div class="modal-goal"><div class="mg-icon">${icon}</div><div class="mg-name">${name}</div><div class="mg-status ${c}">${s}</div></div>`;
-  }).join('');
+  // Workout row — show which activity was logged
+  const woIcon = day&&day.gym&&day.soccer?'🔥':day&&day.soccer?'⚽':'🏋️';
+  const woName = day&&day.gym&&day.soccer?'Gym + Soccer':day&&day.soccer?'Soccer':'Gym';
+  const workoutGoals = [{icon:woIcon,name:'Workout — '+woName,done:day&&workoutDone(day),rest:day&&day.rest}];
+  const otherGoals = [{key:'eat',icon:'🥗',name:'Eat Healthy'},{key:'business',icon:'💼',name:'Work on Business'}];
+  document.getElementById('modalGoals').innerHTML=[
+    ...workoutGoals.map(({icon,name,done:d,rest})=>{
+      const s=!day?'No data':rest?'Rest day':d?'Completed ✓':'Missed';
+      const c=!day||rest?'na':d?'done':'missed';
+      return `<div class="modal-goal"><div class="mg-icon">${icon}</div><div class="mg-name">${name}</div><div class="mg-status ${c}">${s}</div></div>`;
+    }),
+    ...otherGoals.map(({key,icon,name})=>{
+      const s=!day?'No data':day[key]?'Completed ✓':'Missed';
+      const c=!day?'na':day[key]?'done':'missed';
+      return `<div class="modal-goal"><div class="mg-icon">${icon}</div><div class="mg-name">${name}</div><div class="mg-status ${c}">${s}</div></div>`;
+    })
+  ].join('');
   const done=day?(day.rest?0:(workoutDone(day)?1:0))+(day.eat?1:0)+(day.business?1:0):0;
   const total=day&&day.rest?2:3;
   document.getElementById('modalMeta').innerHTML=
