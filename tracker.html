@@ -6,6 +6,7 @@
 <title>Daily Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
 :root{
   --gold:#C6952A;--gold-light:#DDB96A;--gold-pale:#f0e4c8;
@@ -1340,7 +1341,7 @@ const photoRetake= document.getElementById('photoRetake');
 photoZone.addEventListener('click', () => photoInput.click());
 photoRetake.addEventListener('click', e => { e.stopPropagation(); photoInput.click(); });
 
-photoInput.addEventListener('change', () => {
+photoInput.addEventListener('change', async () => {
   const file = photoInput.files[0];
   if(!file) return;
   const url = URL.createObjectURL(file);
@@ -1350,6 +1351,29 @@ photoInput.addEventListener('change', () => {
   photoZone.querySelector('.photo-zone-icon').style.display = 'none';
   photoZone.querySelector('.photo-zone-label').style.display = 'none';
   photoRetake.style.display = 'block';
+
+  // Auto-read ingredients via OCR
+  const ta = document.getElementById('ingredientsInput');
+  ta.value = '';
+  ta.placeholder = 'Reading label… this takes a few seconds';
+  ta.disabled = true;
+  document.getElementById('scoreBtn').disabled = true;
+
+  try {
+    const { data: { text } } = await Tesseract.recognize(url, 'eng');
+    // Extract the ingredients section if possible
+    const lower = text.toLowerCase();
+    const idx = lower.search(/ingredients?\s*:/);
+    const extracted = idx >= 0 ? text.slice(idx) : text;
+    ta.value = extracted.trim();
+    ta.placeholder = 'Ingredients auto-filled — edit if needed';
+  } catch(e) {
+    ta.placeholder = 'Could not read label — please type the ingredients manually';
+  } finally {
+    ta.disabled = false;
+    document.getElementById('scoreBtn').disabled = false;
+    ta.focus();
+  }
 });
 
 // ── Scoring data ──────────────────────────────────────────────────────────
