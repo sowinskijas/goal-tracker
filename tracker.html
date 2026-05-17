@@ -601,6 +601,13 @@ const d = new Date();
 document.getElementById('dateDisplay').textContent = d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
 
 let data = getData();
+
+// One-time seed for May 16 — only sets it if that day has no data yet
+if(!data['2026-05-16']){
+  data['2026-05-16']={gym:true,soccer:false,eat:true,business:true,rest:false,weight:116,notes:''};
+  saveData(data);
+}
+
 let today = getDay(data,TODAY);
 
 // Rest toggle
