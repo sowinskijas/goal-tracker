@@ -347,52 +347,12 @@ h1,h2,h3{font-family:"Cormorant Garamond",serif;font-weight:600;}
 .modal-notes-label{font-size:0.6rem;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-mid);margin-bottom:8px;}
 .modal-notes-text{font-size:0.85rem;color:var(--text-light);line-height:1.7;white-space:pre-wrap;}
 
-/* ── API Key Modal ── */
-.key-modal-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,0.82);
-  display:flex;align-items:center;justify-content:center;
-  z-index:300;padding:20px;
-  opacity:0;pointer-events:none;transition:opacity 0.2s;
-}
-.key-modal-overlay.open{opacity:1;pointer-events:all;}
-.key-modal{
-  width:100%;max-width:400px;
-  background:var(--charcoal-2);border:1px solid var(--border);
-  border-radius:12px;padding:32px 28px;
-  transform:translateY(16px);transition:transform 0.25s ease;
-}
-.key-modal-overlay.open .key-modal{transform:translateY(0);}
-.key-modal h2{font-size:1.5rem;margin-bottom:8px;color:#fff;}
-.key-modal p{font-size:0.82rem;color:var(--text-mid);line-height:1.65;margin-bottom:22px;}
-.key-modal p a{color:var(--gold);text-decoration:none;}
-.key-modal p a:hover{text-decoration:underline;}
-.key-modal input{
-  width:100%;background:var(--charcoal-3);border:1px solid var(--border);
-  border-radius:var(--radius);color:#fff;
-  font-family:"Raleway",sans-serif;font-size:0.88rem;
-  padding:12px 14px;outline:none;transition:border-color 0.15s;
-  margin-bottom:14px;
-}
-.key-modal input:focus{border-color:var(--gold);}
-.key-modal input::placeholder{color:var(--slate);}
-.key-modal-actions{display:flex;gap:10px;}
-.key-save-btn{
-  flex:1;padding:12px;background:var(--gold);color:#000;border:none;
-  border-radius:var(--radius);font-family:"Raleway",sans-serif;
-  font-size:0.78rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;
-  cursor:pointer;transition:background 0.15s;
-}
-.key-save-btn:hover{background:var(--gold-light);}
-.key-cancel-btn{
-  padding:12px 18px;background:transparent;color:var(--text-mid);
-  border:1px solid var(--border);border-radius:var(--radius);
-  font-family:"Raleway",sans-serif;font-size:0.78rem;font-weight:700;
-  letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;
-  transition:color 0.15s;
-}
-.key-cancel-btn:hover{color:#fff;}
-.key-note{
-  font-size:0.66rem;color:var(--slate);margin-top:12px;text-align:center;line-height:1.5;
+/* ── AI tip chips ── */
+.ai-tips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
+.ai-tip-chip{
+  padding:6px 13px;background:var(--charcoal-3);border:1px solid var(--border);
+  border-radius:20px;font-size:0.68rem;font-weight:600;letter-spacing:0.06em;
+  color:var(--text-mid);cursor:pointer;transition:all 0.15s;
 }
 
 /* ── Reset ── */
@@ -439,8 +399,21 @@ h1,h2,h3{font-family:"Cormorant Garamond",serif;font-weight:600;}
     <div class="goal-item" id="goal-gym" data-key="gym">
       <div class="goal-icon">🏋️</div>
       <div class="goal-info">
-        <div class="goal-name">Gym / Soccer</div>
-        <div class="goal-sub" id="gym-sub">Workout or play soccer today</div>
+        <div class="goal-name">Gym</div>
+        <div class="goal-sub" id="gym-sub">Lift, train, or workout</div>
+      </div>
+      <div class="checkbox">
+        <svg viewBox="0 0 13 10" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="1.5,5 5,8.5 11.5,1.5"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="goal-item" id="goal-soccer" data-key="soccer">
+      <div class="goal-icon">⚽</div>
+      <div class="goal-info">
+        <div class="goal-name">Soccer</div>
+        <div class="goal-sub" id="soccer-sub">Play or practice soccer</div>
       </div>
       <div class="checkbox">
         <svg viewBox="0 0 13 10" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -513,25 +486,21 @@ h1,h2,h3{font-family:"Cormorant Garamond",serif;font-weight:600;}
     <div class="ai-card-header">
       <div>
         <div class="card-title" style="margin-bottom:4px;">AI Coach</div>
-        <div class="ai-badge">Powered by Claude</div>
+        <div class="ai-badge">Smart Insights</div>
       </div>
-      <button class="key-btn" id="keyBtn">⚙ API Key</button>
     </div>
 
     <div class="ai-tabs">
       <button class="ai-tab active" data-tab="debrief">Daily Debrief</button>
       <button class="ai-tab" data-tab="weekly">Weekly Insights</button>
-      <button class="ai-tab" data-tab="chat">Business Chat</button>
+      <button class="ai-tab" data-tab="biz">Business</button>
     </div>
 
-    <div class="ai-output empty" id="aiOutput">Generate your first AI debrief above</div>
+    <div class="ai-output empty" id="aiOutput">Tap below to generate your debrief</div>
 
-    <div class="ai-chat-input" id="chatInputRow">
-      <input type="text" id="chatInput" placeholder="Ask about your business idea…">
-      <button class="ai-send-btn" id="chatSendBtn">➤</button>
-    </div>
+    <div class="ai-tips" id="aiTips" style="display:none;"></div>
 
-    <button class="ai-generate-btn" id="aiGenerateBtn">✦ Generate Debrief</button>
+    <button class="ai-generate-btn" id="aiGenerateBtn">✦ Generate Today's Debrief</button>
   </div>
 
   <!-- Per-goal calendar -->
@@ -543,6 +512,9 @@ h1,h2,h3{font-family:"Cormorant Garamond",serif;font-weight:600;}
     <div id="calHeader" class="cal-header"></div>
     <div class="cal-row" id="cal-gym">
       <div class="cal-label"><span class="licon">🏋️</span> Gym</div>
+    </div>
+    <div class="cal-row" id="cal-soccer">
+      <div class="cal-label"><span class="licon">⚽</span> Soccer</div>
     </div>
     <div class="cal-row" id="cal-eat">
       <div class="cal-label"><span class="licon">🥗</span> Eat</div>
@@ -572,26 +544,12 @@ h1,h2,h3{font-family:"Cormorant Garamond",serif;font-weight:600;}
   </div>
 </div>
 
-<!-- API Key modal -->
-<div class="key-modal-overlay" id="keyModalOverlay">
-  <div class="key-modal">
-    <h2>Connect AI Coach</h2>
-    <p>Enter your Anthropic API key to unlock personalized daily debriefs, weekly insights, and a business brainstorm chat. Your key is stored locally on your device only.</p>
-    <input type="password" id="keyInput" placeholder="sk-ant-api03-...">
-    <div class="key-modal-actions">
-      <button class="key-save-btn" id="keySaveBtn">Save Key</button>
-      <button class="key-cancel-btn" id="keyCancelBtn">Cancel</button>
-    </div>
-    <div class="key-note">Get your key at console.anthropic.com · Never shared or uploaded</div>
-  </div>
-</div>
-
 <script>
 const TODAY = new Date().toISOString().slice(0,10);
 
 function getData(){ return JSON.parse(localStorage.getItem('tracker_v2')||'{}'); }
 function saveData(d){ localStorage.setItem('tracker_v2',JSON.stringify(d)); }
-function getDay(data,date){ return data[date]||{gym:false,eat:false,business:false,rest:false,weight:null,notes:''}; }
+function getDay(data,date){ return data[date]||{gym:false,soccer:false,eat:false,business:false,rest:false,weight:null,notes:''}; }
 
 // Date display
 const d = new Date();
@@ -611,16 +569,25 @@ restToggle.addEventListener('change',()=>{
 });
 
 function updateGymGoal(){
-  const el = document.getElementById('goal-gym');
-  const sub = document.getElementById('gym-sub');
-  if(today.rest){ el.classList.add('disabled'); sub.textContent='Rest day — recovery is part of the process'; }
-  else { el.classList.remove('disabled'); sub.textContent='Workout or play soccer today'; }
+  const gymEl = document.getElementById('goal-gym');
+  const socEl = document.getElementById('goal-soccer');
+  const gymSub = document.getElementById('gym-sub');
+  const socSub = document.getElementById('soccer-sub');
+  if(today.rest){
+    gymEl.classList.add('disabled'); socEl.classList.add('disabled');
+    gymSub.textContent='Rest day — recovery is part of the process';
+    socSub.textContent='Rest day — let the body recover';
+  } else {
+    gymEl.classList.remove('disabled'); socEl.classList.remove('disabled');
+    gymSub.textContent='Lift, train, or workout';
+    socSub.textContent='Play or practice soccer';
+  }
 }
 
 // Goals
-['gym','eat','business'].forEach(key=>{
+['gym','soccer','eat','business'].forEach(key=>{
   document.getElementById('goal-'+key).addEventListener('click',()=>{
-    if(key==='gym'&&today.rest) return;
+    if((key==='gym'||key==='soccer')&&today.rest) return;
     today[key]=!today[key];
     saveToday(); render();
   });
@@ -650,17 +617,19 @@ document.getElementById('notesArea').addEventListener('input',e=>{
 // Reset
 document.getElementById('resetDay').addEventListener('click',()=>{
   if(!confirm('Reset today\'s check-ins?')) return;
-  today={gym:false,eat:false,business:false,rest:false,weight:today.weight,notes:today.notes};
+  today={gym:false,soccer:false,eat:false,business:false,rest:false,weight:today.weight,notes:today.notes};
   restToggle.checked=false;
   saveToday(); render(); updateGymGoal();
 });
 
 function saveToday(){ data[TODAY]=today; saveData(data); }
 
+function workoutDone(day){ return !!(day.gym||day.soccer); }
+
 function render(){
-  ['gym','eat','business'].forEach(key=>document.getElementById('goal-'+key).classList.toggle('checked',!!today[key]));
+  ['gym','soccer','eat','business'].forEach(key=>document.getElementById('goal-'+key).classList.toggle('checked',!!today[key]));
   const total = today.rest?2:3;
-  const done = (today.rest?0:(today.gym?1:0))+(today.eat?1:0)+(today.business?1:0);
+  const done = (today.rest?0:(workoutDone(today)?1:0))+(today.eat?1:0)+(today.business?1:0);
   document.getElementById('progressLabel').textContent=done+' / '+total;
   document.getElementById('progressFill').style.width=(done/total*100)+'%';
   renderStreaks(); renderHistory();
@@ -738,26 +707,26 @@ function drawSparkline(entries){
 }
 
 function renderStreaks(){
-  let overall=0,gym=0,overallBroken=false,gymBroken=false;
+  let overall=0,workout=0,overallBroken=false,workoutBroken=false;
   for(let i=0;i<90;i++){
     const date=new Date(); date.setDate(date.getDate()-i);
     const key=date.toISOString().slice(0,10);
     const day=data[key];
-    if(!day){ if(i>0){overallBroken=true;gymBroken=true;} break; }
+    if(!day){ if(i>0){overallBroken=true;workoutBroken=true;} break; }
     if(!overallBroken){
       const total=day.rest?2:3;
-      const done=(day.rest?0:(day.gym?1:0))+(day.eat?1:0)+(day.business?1:0);
+      const done=(day.rest?0:(workoutDone(day)?1:0))+(day.eat?1:0)+(day.business?1:0);
       if(done>=total) overall++;
       else if(i>0) overallBroken=true;
     }
-    if(!gymBroken){
-      if(day.rest) gym++;
-      else if(day.gym) gym++;
-      else if(i>0) gymBroken=true;
+    if(!workoutBroken){
+      if(day.rest) workout++;
+      else if(workoutDone(day)) workout++;
+      else if(i>0) workoutBroken=true;
     }
   }
   document.getElementById('overallStreak').textContent=overall;
-  document.getElementById('gymStreak').textContent=gym;
+  document.getElementById('gymStreak').textContent=workout;
 }
 
 // Calendar
@@ -779,7 +748,7 @@ function renderHistory(){
   document.getElementById('calHeader').innerHTML=days.map(({date,isToday})=>
     `<div class="cal-header-day${isToday?' today-col':''}">${date.getDate()}</div>`
   ).join('');
-  const goals=[{id:'cal-gym',key:'gym'},{id:'cal-eat',key:'eat'},{id:'cal-business',key:'business'}];
+  const goals=[{id:'cal-gym',key:'gym'},{id:'cal-soccer',key:'soccer'},{id:'cal-eat',key:'eat'},{id:'cal-business',key:'business'}];
   goals.forEach(({id,key})=>{
     const row=document.getElementById(id);
     Array.from(row.querySelectorAll('.cal-cell')).forEach(el=>el.remove());
@@ -813,16 +782,16 @@ function openModal(dateKey){
   const day=data[dateKey];
   document.getElementById('modalDate').textContent=date.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})+(isToday?' — Today':'');
   document.getElementById('modalRestBadge').style.display=day&&day.rest?'inline-block':'none';
-  const goalDefs=[{key:'gym',icon:'🏋️',name:'Gym / Soccer'},{key:'eat',icon:'🥗',name:'Eat Healthy'},{key:'business',icon:'💼',name:'Work on Business'}];
+  const goalDefs=[{key:'gym',icon:'🏋️',name:'Gym'},{key:'soccer',icon:'⚽',name:'Soccer'},{key:'eat',icon:'🥗',name:'Eat Healthy'},{key:'business',icon:'💼',name:'Work on Business'}];
   document.getElementById('modalGoals').innerHTML=goalDefs.map(({key,icon,name})=>{
     let s,c;
     if(!day){s='No data';c='na';}
-    else if(key==='gym'&&day.rest){s='Rest day';c='na';}
+    else if((key==='gym'||key==='soccer')&&day.rest){s='Rest day';c='na';}
     else if(day[key]){s='Completed ✓';c='done';}
     else{s='Missed';c='missed';}
     return `<div class="modal-goal"><div class="mg-icon">${icon}</div><div class="mg-name">${name}</div><div class="mg-status ${c}">${s}</div></div>`;
   }).join('');
-  const done=day?((day.rest?0:(day.gym?1:0))+(day.eat?1:0)+(day.business?1:0)):0;
+  const done=day?(day.rest?0:(workoutDone(day)?1:0))+(day.eat?1:0)+(day.business?1:0):0;
   const total=day&&day.rest?2:3;
   document.getElementById('modalMeta').innerHTML=
     `<div class="modal-chip"><div class="chip-label">Score</div><div class="chip-val">${day?done+' / '+total:'—'}</div></div>`+
@@ -835,37 +804,12 @@ function openModal(dateKey){
   modalOverlay.classList.add('open');
 }
 
-// ── AI Coach ──────────────────────────────────────────────────────────────
-const API_KEY_STORAGE = 'tracker_anthropic_key';
+// ── AI Coach (no API key needed) ──────────────────────────────────────────
 let currentTab = 'debrief';
-let isGenerating = false;
-
-function getApiKey(){ return localStorage.getItem(API_KEY_STORAGE)||''; }
-
-// Key modal
-const keyModalOverlay = document.getElementById('keyModalOverlay');
-document.getElementById('keyBtn').addEventListener('click', showKeyModal);
-document.getElementById('keySaveBtn').addEventListener('click', saveApiKey);
-document.getElementById('keyCancelBtn').addEventListener('click', hideKeyModal);
-keyModalOverlay.addEventListener('click', e=>{ if(e.target===keyModalOverlay) hideKeyModal(); });
-
-function showKeyModal(){
-  document.getElementById('keyInput').value = getApiKey();
-  keyModalOverlay.classList.add('open');
-  setTimeout(()=>document.getElementById('keyInput').focus(), 200);
-}
-function hideKeyModal(){ keyModalOverlay.classList.remove('open'); }
-function saveApiKey(){
-  const val = document.getElementById('keyInput').value.trim();
-  if(!val){ alert('Please enter a valid API key.'); return; }
-  localStorage.setItem(API_KEY_STORAGE, val);
-  hideKeyModal();
-  setAiOutput('API key saved. Click the button below to generate your debrief.', false);
-}
 
 // Tabs
 document.querySelectorAll('.ai-tab').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
+  btn.addEventListener('click',()=>{
     document.querySelectorAll('.ai-tab').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     currentTab = btn.dataset.tab;
@@ -874,229 +818,263 @@ document.querySelectorAll('.ai-tab').forEach(btn=>{
 });
 
 function updateTabUI(){
-  const chatRow = document.getElementById('chatInputRow');
   const genBtn = document.getElementById('aiGenerateBtn');
-  if(currentTab === 'chat'){
-    chatRow.classList.add('visible');
-    genBtn.style.display='none';
-    setAiOutput('Ask me anything about your business idea, strategy, or next steps.', false);
-  } else {
-    chatRow.classList.remove('visible');
+  const tipsEl = document.getElementById('aiTips');
+  tipsEl.style.display = 'none';
+  tipsEl.innerHTML = '';
+  if(currentTab==='debrief'){
     genBtn.style.display='block';
-    genBtn.textContent = currentTab==='debrief' ? '✦ Generate Today\'s Debrief' : '✦ Generate Weekly Insights';
-    setAiOutput(currentTab==='debrief'?'Generate your daily AI debrief above':'Analyze the last 7 days of your data', false);
+    genBtn.textContent='✦ Generate Today\'s Debrief';
+    setAiOutput('Tap below to generate your debrief',false);
+  } else if(currentTab==='weekly'){
+    genBtn.style.display='block';
+    genBtn.textContent='✦ Generate Weekly Insights';
+    setAiOutput('Tap below to analyze your last 7 days',false);
+  } else {
+    genBtn.style.display='none';
+    setAiOutput('',false);
+    renderBizPrompts();
   }
 }
 
-function setAiOutput(text, isLoading){
-  const out = document.getElementById('aiOutput');
-  out.classList.toggle('empty', !isLoading && !text.trim());
-  out.classList.toggle('loading', isLoading);
-  out.textContent = text || (isLoading ? '' : 'Generate your first AI debrief above');
+function setAiOutput(text,empty){
+  const out=document.getElementById('aiOutput');
+  out.classList.toggle('empty', empty!==false ? !text.trim() : false);
+  out.textContent = text;
 }
 
-function appendAiOutput(text){
-  const out = document.getElementById('aiOutput');
-  out.classList.remove('empty');
-  out.textContent += text;
-  out.scrollTop = out.scrollHeight;
-}
-
-// Claude API streaming call
-async function callClaude(systemPrompt, userMessage){
-  const apiKey = getApiKey();
-  if(!apiKey){ showKeyModal(); return; }
-  if(isGenerating) return;
-  isGenerating = true;
-  const btn = document.getElementById('aiGenerateBtn');
-  if(btn) btn.disabled = true;
-
-  setAiOutput('', true);
-
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5',
-        max_tokens: 700,
-        stream: true,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userMessage }]
-      })
-    });
-
-    if(!response.ok){
-      const err = await response.json().catch(()=>({error:{message:'Unknown error'}}));
-      const msg = err?.error?.message || `Error ${response.status}`;
-      if(response.status === 401) setAiOutput('Invalid API key. Click ⚙ API Key to update it.', false);
-      else setAiOutput('Error: ' + msg, false);
-      return;
-    }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-    let firstChunk = true;
-
-    while(true){
-      const {done, value} = await reader.read();
-      if(done) break;
-      buffer += decoder.decode(value, {stream:true});
-      const lines = buffer.split('\n');
-      buffer = lines.pop();
-      for(const line of lines){
-        if(!line.startsWith('data: ')) continue;
-        const raw = line.slice(6).trim();
-        if(raw === '[DONE]') continue;
-        try {
-          const json = JSON.parse(raw);
-          if(json.type === 'content_block_delta' && json.delta?.text){
-            if(firstChunk){ document.getElementById('aiOutput').classList.remove('loading'); firstChunk=false; }
-            appendAiOutput(json.delta.text);
-          }
-        } catch{}
-      }
-    }
-  } catch(e) {
-    setAiOutput('Network error. Check your connection and try again.', false);
-  } finally {
-    isGenerating = false;
-    if(btn) btn.disabled = false;
-    document.getElementById('aiOutput').classList.remove('loading');
-  }
-}
-
-function buildTodaySummary(){
-  const goals = [];
-  if(today.rest) goals.push('Rest day (no gym goal)');
-  else {
-    goals.push('Gym/Soccer: '+(today.gym?'✓ Completed':'✗ Not done'));
-  }
-  goals.push('Eat Healthy: '+(today.eat?'✓ Completed':'✗ Not done'));
-  goals.push('Work on Business: '+(today.business?'✓ Completed':'✗ Not done'));
-  const done = (today.rest?0:(today.gym?1:0))+(today.eat?1:0)+(today.business?1:0);
-  const total = today.rest?2:3;
-  const weight = today.weight ? today.weight+' lbs' : 'not logged';
-  const notes = today.notes ? '\n\nNotes: '+today.notes : '';
-  return `Date: ${TODAY}\nGoals (${done}/${total} complete):\n${goals.join('\n')}\nWeight: ${weight}${notes}`;
-}
-
-function buildWeeklySummary(){
-  const rows = [];
+// ── Data analysis helpers ──────────────────────────────────────────────────
+function last7(){
+  const days=[];
   for(let i=6;i>=0;i--){
-    const date=new Date(); date.setDate(date.getDate()-i);
-    const key=date.toISOString().slice(0,10);
-    const day=data[key];
-    const label=date.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
-    if(!day){rows.push(`${label}: No data`);continue;}
-    const done=(day.rest?0:(day.gym?1:0))+(day.eat?1:0)+(day.business?1:0);
-    const total=day.rest?2:3;
-    const w=day.weight?` | ${day.weight}lbs`:'';
-    rows.push(`${label}${day.rest?' (Rest)':''}: ${done}/${total}${w}`);
+    const dt=new Date(); dt.setDate(dt.getDate()-i);
+    const key=dt.toISOString().slice(0,10);
+    days.push({key,dt,day:data[key]||null});
   }
-  const weights=Object.entries(data).filter(([,v])=>v.weight).sort(([a],[b])=>a.localeCompare(b)).slice(-7);
-  const trend=weights.length>=2?`\nWeight trend: ${weights[0][1].weight} → ${weights[weights.length-1][1].weight} lbs`:'';
-  return rows.join('\n')+trend;
+  return days;
+}
+
+function completionRate(days, goal){
+  const isWorkout = goal==='gym'||goal==='soccer';
+  const applicable = days.filter(({day})=>day && !(isWorkout&&day.rest));
+  if(!applicable.length) return null;
+  const done = applicable.filter(({day})=>day[goal]).length;
+  return {done, total:applicable.length, pct:Math.round(done/applicable.length*100)};
+}
+
+function weightTrend(){
+  const entries = Object.entries(data)
+    .filter(([,v])=>v.weight)
+    .sort(([a],[b])=>a.localeCompare(b))
+    .slice(-14);
+  if(entries.length<2) return null;
+  const first=entries[0][1].weight, last=entries[entries.length-1][1].weight;
+  return {first,last,diff:(last-first).toFixed(1),days:entries.length};
+}
+
+function weakestDay(goal){
+  const byDow=[0,0,0,0,0,0,0], totalByDow=[0,0,0,0,0,0,0];
+  Object.entries(data).forEach(([key,day])=>{
+    if(!day||((goal==='gym'||goal==='soccer')&&day.rest)) return;
+    const dow=new Date(key+'T12:00:00').getDay();
+    totalByDow[dow]++;
+    if(day[goal]) byDow[dow]++;
+  });
+  let worst=-1,worstPct=101;
+  totalByDow.forEach((t,i)=>{
+    if(t<3) return;
+    const pct=byDow[i]/t;
+    if(pct<worstPct){worstPct=pct;worst=i;}
+  });
+  const names=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  return worst>=0?names[worst]:null;
+}
+
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+// ── Daily Debrief generator ────────────────────────────────────────────────
+function generateDebrief(){
+  const days=last7();
+  const gymRate=completionRate(days,'gym');
+  const eatRate=completionRate(days,'eat');
+  const bizRate=completionRate(days,'business');
+  const wt=weightTrend();
+
+  const done=(today.rest?0:(workoutDone(today)?1:0))+(today.eat?1:0)+(today.business?1:0);
+  const total=today.rest?2:3;
+  const allDone=done>=total;
+  const nothingDone=done===0&&!today.rest;
+
+  const lines=[];
+
+  // Opening — based on today's state
+  if(today.rest){
+    lines.push(pick([
+      'Rest day — smart move. Recovery is where the gains actually happen.',
+      'Taking a rest day is part of the plan, not a break from it. Good call.',
+      'Rest days are training days for your nervous system. Own it.'
+    ]));
+  } else if(allDone){
+    lines.push(pick([
+      'Clean sweep today — every goal checked. That\'s the standard you\'re setting.',
+      'All three done. Days like this are what separate the people who talk from the people who build.',
+      'Perfect day. You showed up for all of it — gym, food, business. That\'s momentum.'
+    ]));
+  } else if(nothingDone){
+    lines.push(pick([
+      'Nothing logged yet today. The day isn\'t over — pick one goal and lock it in right now.',
+      'Zero checked so far. One win is all it takes to flip the energy — go get it.',
+      'Still early. Three goals sitting unchecked is just three opportunities. Start with the easiest one.'
+    ]));
+  } else {
+    const hit=[], missed=[];
+    if(!today.rest){
+      const wo=workoutDone(today);
+      const woLabel=today.gym&&today.soccer?'gym and soccer':today.gym?'gym':today.soccer?'soccer':'workout';
+      wo?hit.push(woLabel):missed.push('workout');
+    }
+    today.eat?hit.push('eating'):missed.push('eating');
+    today.business?hit.push('business'):missed.push('business');
+    const hitStr=hit.join(' and '), missStr=missed.join(' and ');
+    lines.push(`Solid on ${hitStr} today.${missed.length?' Still time to take care of '+missStr+'.':''}`);
+  }
+
+  // Weight insight
+  if(wt){
+    const diff=parseFloat(wt.diff);
+    if(diff>0.5) lines.push(`You\'re up ${wt.diff} lbs over the last stretch — the scale is moving in your direction. Keep fueling.`);
+    else if(diff<-0.5) lines.push(`Weight is down ${Math.abs(wt.diff)} lbs recently. Focus on hitting your calorie target — eating healthy doesn\'t mean eating less.`);
+    else lines.push('Weight has been steady. If gaining is the goal, look for one more meal or snack you can add without sacrificing quality.');
+  } else if(today.weight){
+    lines.push(`Logged at ${today.weight} lbs today. Keep tracking consistently so you can spot your trend early.`);
+  }
+
+  // Weekly pattern insight
+  const rates=[gymRate,eatRate,bizRate].filter(Boolean);
+  if(rates.length){
+    const worst=rates.reduce((a,b)=>a.pct<b.pct?a:b);
+    const best=rates.reduce((a,b)=>a.pct>b.pct?a:b);
+    const goalNames={gym:'gym/soccer',eat:'eating clean',business:'business work'};
+    const gymN=goalNames.gym,eatN=goalNames.eat,bizN=goalNames.business;
+    const worstName=gymRate===worst?gymN:eatRate===worst?eatN:bizN;
+    const bestName=gymRate===best?gymN:eatRate===best?eatN:bizN;
+    if(worst.pct<70) lines.push(`This week your ${worstName} completion is at ${worst.pct}% — that\'s the one to shore up. Everything else can wait.`);
+    else if(best.pct===100) lines.push(`${bestName.charAt(0).toUpperCase()+bestName.slice(1)} is at 100% this week. That consistency is a real asset — protect it.`);
+  }
+
+  // Closing nudge
+  if(!today.rest&&!allDone){
+    const missed=[];
+    if(!today.gym) missed.push('gym');
+    if(!today.eat) missed.push('eating');
+    if(!today.business) missed.push('business');
+    if(missed.length===1){
+      const m=missed[0];
+      if(m==='gym') lines.push('Still time to get a session in. Even 20 minutes moves the needle.');
+      else if(m==='eat') lines.push('Lock in a good meal before the day ends — protein, calories, consistency.');
+      else lines.push('Spend 30 minutes on the business before you sleep. One small action keeps the momentum alive.');
+    }
+  } else if(allDone&&!today.rest){
+    lines.push(pick([
+      'Do it again tomorrow.',
+      'String another one of these together.',
+      'One day at a time — this is how it\'s built.'
+    ]));
+  }
+
+  return lines.join('\n\n');
+}
+
+// ── Weekly Insights generator ──────────────────────────────────────────────
+function generateWeekly(){
+  const days=last7();
+  const hasData=days.filter(({day})=>day).length;
+  if(hasData<3) return 'Log at least 3 days to unlock weekly insights. Keep tracking — the patterns will show up.';
+
+  const gymRate=completionRate(days,'gym');
+  const soccerRate=completionRate(days,'soccer');
+  const eatRate=completionRate(days,'eat');
+  const bizRate=completionRate(days,'business');
+  const wt=weightTrend();
+  const lines=[];
+
+  // Completion table summary
+  const rateStr=(r,label)=>r?`${label}: ${r.done}/${r.total} days (${r.pct}%)`:`${label}: —`;
+  lines.push('Last 7 days:\n'+[gymRate,soccerRate,eatRate,bizRate].map((r,i)=>rateStr(r,['Gym','Soccer','Eating','Business'][i])).join('\n'));
+
+  // Pattern: overall best/worst goal
+  const allRates=[{r:gymRate,n:'gym'},{r:soccerRate,n:'soccer'},{r:eatRate,n:'healthy eating'},{r:bizRate,n:'business work'}].filter(x=>x.r);
+  if(allRates.length){
+    const best=allRates.reduce((a,b)=>a.r.pct>=b.r.pct?a:b);
+    const worst=allRates.reduce((a,b)=>a.r.pct<=b.r.pct?a:b);
+    if(best.r.pct>0) lines.push(`Strongest this week: ${best.n} (${best.r.pct}%). That\'s your anchor — build the rest around it.`);
+    if(worst.r.pct<100&&worst.n!==best.n) lines.push(`Needs attention: ${worst.n} at ${worst.r.pct}%. One more completed day this week would have pushed it to ${Math.round((worst.r.done+1)/(worst.r.total)*100)}%. Close the gap.`);
+  }
+
+  // Weak day pattern
+  const weakGym=weakestDay('gym');
+  if(weakGym) lines.push(`You tend to miss gym on ${weakGym}s. Anticipate it — either protect that day or plan a lighter alternative.`);
+
+  // Weight
+  if(wt){
+    const diff=parseFloat(wt.diff);
+    const dir=diff>0?`gaining at ~${(Math.abs(diff)/wt.days*7).toFixed(1)} lbs/week`:diff<0?`losing ~${(Math.abs(diff)/wt.days*7).toFixed(1)} lbs/week`:'holding steady';
+    lines.push(`Weight trend: ${wt.first} → ${wt.last} lbs (${diff>=0?'+':''}${wt.diff} lbs). You\'re ${dir}. ${diff>0?'On track for your gaining goal.':diff<0?'Prioritize calorie surplus — eat more even when you\'re not hungry.':'Push calories up slightly to start seeing movement.'}`);
+  }
+
+  // Consistency score
+  const totalPct=allRates.reduce((s,x)=>s+x.r.pct,0)/allRates.length;
+  const grade=totalPct>=90?'Elite':totalPct>=75?'Strong':totalPct>=55?'Building':'Needs work';
+  lines.push(`Overall consistency: ${Math.round(totalPct)}% — ${grade}. ${totalPct>=75?'Keep stacking weeks like this.':'One more goal per day would move you to the next level.'}`);
+
+  return lines.join('\n\n');
+}
+
+// ── Business prompts (no API needed) ──────────────────────────────────────
+const BIZ_PROMPTS=[
+  {chip:'Validate your idea',text:'The fastest way to validate a business idea: find 5 people who have the problem you\'re solving and ask them what they\'ve already tried and paid for to fix it. If they\'ve paid for something — even a bad solution — the pain is real. If they haven\'t tried anything, rethink the urgency of the problem.'},
+  {chip:'One clear offer',text:'Most early businesses fail because the offer is fuzzy. Write your offer in one sentence: "I help [specific person] achieve [specific outcome] in [specific timeframe] without [specific frustration]." If you can\'t fill that in clearly, your customer can\'t understand it either.'},
+  {chip:'First customer strategy',text:'Don\'t build a product, then find customers. Find one customer first. Solve their problem manually if you have to. Charge them for it. Then build the product around what you learned. Your first paying customer teaches you more than a year of planning.'},
+  {chip:'Price higher',text:'Charge more than feels comfortable. Low prices attract difficult customers and signal low value. Higher prices attract serious buyers, fund better service, and force you to deliver real results. It\'s easier to lower a price than raise it — start high.'},
+  {chip:'Consistent output',text:'One of the biggest levers in any business is showing up consistently in public — content, outreach, conversations. One post or email a day for 90 days compounds harder than most people realize. The business days you logged matter more than you think.'},
+  {chip:'What to build next',text:'Stuck on what to work on? Ask: what is the single thing that would most move revenue this week? Not the thing that\'s most interesting or most comfortable. The thing closest to money. Do that first, every day, until you have traction.'},
+  {chip:'Morning routine for builders',text:'Your morning builds your day. 30 minutes on the business before anything else — before email, before social media. Protect that window. Everything urgent can wait. Compounding work done in calm, early hours is how leverage gets built.'},
+  {chip:'Ignore and focus',text:'Most advice about business is noise. Ignore tactics until you have traction. You don\'t need a funnel, a podcast, or a brand strategy right now. You need one customer, one offer, one channel. Go deep before going wide.'},
+];
+
+function renderBizPrompts(){
+  const tipsEl=document.getElementById('aiTips');
+  const out=document.getElementById('aiOutput');
+  tipsEl.style.display='flex';
+  tipsEl.innerHTML=BIZ_PROMPTS.map((p,i)=>
+    `<button class="ai-tip-chip" data-i="${i}">${p.chip}</button>`
+  ).join('');
+  out.classList.remove('empty');
+  out.textContent='Tap a topic to get a focused insight.';
+  tipsEl.querySelectorAll('.ai-tip-chip').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      tipsEl.querySelectorAll('.ai-tip-chip').forEach(b=>b.style.borderColor='');
+      btn.style.borderColor='var(--gold)';
+      btn.style.color='var(--gold-light)';
+      out.textContent=BIZ_PROMPTS[+btn.dataset.i].text;
+      out.classList.remove('empty');
+    });
+  });
 }
 
 // Generate button
-document.getElementById('aiGenerateBtn').addEventListener('click', ()=>{
-  const sys = `You are a personal coach for someone with three daily goals: workout/soccer daily (unless rest day), eat healthy to gain weight, and work on their business. Be direct, warm, and motivating. Use concrete observations. Keep responses under 200 words. No bullet lists — write naturally.`;
-
-  if(currentTab === 'debrief'){
-    callClaude(sys, `Here's my data for today. Give me a short, personalized daily debrief: what I did well, what to focus on tonight or tomorrow, and one specific tip.\n\n${buildTodaySummary()}`);
-  } else if(currentTab === 'weekly'){
-    callClaude(sys, `Here's my data for the last 7 days. Give me a weekly insight: patterns you see, what's working, one thing to improve next week, and a motivational note.\n\n${buildWeeklySummary()}`);
-  }
+document.getElementById('aiGenerateBtn').addEventListener('click',()=>{
+  const btn=document.getElementById('aiGenerateBtn');
+  btn.disabled=true;
+  btn.textContent='Analyzing…';
+  setTimeout(()=>{
+    const text=currentTab==='debrief'?generateDebrief():generateWeekly();
+    document.getElementById('aiOutput').classList.remove('empty');
+    document.getElementById('aiOutput').textContent=text;
+    btn.disabled=false;
+    btn.textContent=currentTab==='debrief'?'✦ Refresh Debrief':'✦ Refresh Insights';
+  },320);
 });
-
-// Business chat
-let chatHistory = [];
-document.getElementById('chatSendBtn').addEventListener('click', sendChat);
-document.getElementById('chatInput').addEventListener('keydown', e=>{ if(e.key==='Enter') sendChat(); });
-
-async function sendChat(){
-  const input = document.getElementById('chatInput');
-  const msg = input.value.trim();
-  if(!msg||isGenerating) return;
-  input.value='';
-
-  chatHistory.push({role:'user',content:msg});
-
-  const apiKey = getApiKey();
-  if(!apiKey){ showKeyModal(); return; }
-  if(isGenerating) return;
-  isGenerating = true;
-
-  const out = document.getElementById('aiOutput');
-  out.classList.remove('empty');
-  out.textContent += (out.textContent?'\n\nYou: '+msg+'\n\nAI: ':msg+'\n\nAI: ');
-  out.classList.add('loading');
-  out.scrollTop = out.scrollHeight;
-
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5',
-        max_tokens: 500,
-        stream: true,
-        system: 'You are a sharp business advisor helping someone build their business. Give concise, practical, actionable advice. Be direct. No fluff.',
-        messages: chatHistory
-      })
-    });
-
-    if(!response.ok){
-      appendAiOutput('[Error connecting to AI]');
-      return;
-    }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-    let assistantReply = '';
-    let firstChunk = true;
-
-    while(true){
-      const {done, value} = await reader.read();
-      if(done) break;
-      buffer += decoder.decode(value,{stream:true});
-      const lines = buffer.split('\n');
-      buffer = lines.pop();
-      for(const line of lines){
-        if(!line.startsWith('data: ')) continue;
-        const raw = line.slice(6).trim();
-        if(raw==='[DONE]') continue;
-        try {
-          const json = JSON.parse(raw);
-          if(json.type==='content_block_delta'&&json.delta?.text){
-            if(firstChunk){ out.classList.remove('loading'); firstChunk=false; }
-            appendAiOutput(json.delta.text);
-            assistantReply += json.delta.text;
-          }
-        } catch{}
-      }
-    }
-    if(assistantReply) chatHistory.push({role:'assistant',content:assistantReply});
-  } catch(e){
-    appendAiOutput('[Network error]');
-  } finally {
-    isGenerating = false;
-    out.classList.remove('loading');
-  }
-}
 
 // Notes restore
 document.getElementById('notesArea').value = today.notes||'';
