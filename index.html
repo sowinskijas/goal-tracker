@@ -255,6 +255,62 @@ h1,h2,h3{font-family:"Cormorant Garamond",serif;font-weight:600;}
   pointer-events:none;z-index:20;
 }
 
+/* Day detail modal */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.7);
+  display:flex;align-items:flex-end;justify-content:center;
+  z-index:100;
+  opacity:0;pointer-events:none;
+  transition:opacity 0.2s;
+}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{
+  width:100%;max-width:520px;
+  background:var(--charcoal-2);
+  border:1px solid var(--border);
+  border-bottom:none;
+  border-radius:12px 12px 0 0;
+  padding:28px 24px 40px;
+  transform:translateY(20px);
+  transition:transform 0.25s ease;
+}
+.modal-overlay.open .modal{transform:translateY(0);}
+.modal-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;}
+.modal-date{font-family:"Cormorant Garamond",serif;font-size:1.6rem;font-weight:600;color:#fff;}
+.modal-close{
+  background:var(--charcoal-3);border:none;color:var(--text-mid);
+  font-size:1.1rem;width:30px;height:30px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;margin-top:4px;
+}
+.modal-rest{
+  display:inline-block;font-size:0.7rem;font-weight:700;letter-spacing:0.14em;
+  text-transform:uppercase;color:var(--text-mid);
+  background:var(--slate);border-radius:4px;padding:4px 10px;margin-bottom:16px;
+}
+.modal-goals{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+.modal-goal{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px;
+  background:var(--charcoal-3);border-radius:var(--radius);
+}
+.modal-goal .mg-icon{font-size:1.1rem;width:24px;text-align:center;}
+.modal-goal .mg-name{flex:1;font-size:0.88rem;font-weight:600;}
+.modal-goal .mg-status{font-size:0.75rem;font-weight:700;}
+.mg-status.done{color:#4caf7d;}
+.mg-status.missed{color:#e05c5c;}
+.mg-status.na{color:var(--text-mid);}
+.modal-meta{display:flex;gap:10px;margin-bottom:16px;}
+.modal-chip{
+  background:var(--charcoal-3);border-radius:var(--radius);
+  padding:10px 14px;flex:1;
+}
+.modal-chip .chip-label{font-size:0.62rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-mid);margin-bottom:4px;}
+.modal-chip .chip-val{font-size:1rem;font-weight:700;color:var(--gold-light);}
+.modal-notes-label{font-size:0.62rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-mid);margin-bottom:8px;}
+.modal-notes-text{font-size:0.85rem;color:var(--text-light);line-height:1.6;white-space:pre-wrap;}
+
 /* Reset */
 .reset-link{
   display:block;text-align:center;margin-top:24px;
@@ -384,6 +440,23 @@ h1,h2,h3{font-family:"Cormorant Garamond",serif;font-weight:600;}
 
   <div class="reset-link" id="resetDay">Reset today's check-ins</div>
 
+</div>
+
+<!-- Day detail modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-top">
+      <div class="modal-date" id="modalDate"></div>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div id="modalRestBadge" class="modal-rest" style="display:none">Rest Day</div>
+    <div class="modal-goals" id="modalGoals"></div>
+    <div class="modal-meta" id="modalMeta"></div>
+    <div id="modalNotesWrap" style="display:none">
+      <div class="modal-notes-label">Notes</div>
+      <div class="modal-notes-text" id="modalNotes"></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -607,9 +680,65 @@ function renderHistory(){
       const cell = document.createElement('div');
       cell.className = 'cal-cell ' + cls;
       cell.setAttribute('data-tip', tip);
+      cell.addEventListener('click', e => { e.stopPropagation(); openModal(dateKey); });
       row.appendChild(cell);
     });
   });
+}
+
+// Modal
+const modalOverlay = document.getElementById('modalOverlay');
+document.getElementById('modalClose').addEventListener('click', closeModal);
+modalOverlay.addEventListener('click', e => { if(e.target === modalOverlay) closeModal(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
+
+function closeModal(){
+  modalOverlay.classList.remove('open');
+}
+
+function openModal(dateKey){
+  const date = new Date(dateKey + 'T12:00:00');
+  const isToday = dateKey === TODAY;
+  const day = data[dateKey];
+
+  document.getElementById('modalDate').textContent = date.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}) + (isToday ? ' — Today' : '');
+  document.getElementById('modalRestBadge').style.display = day && day.rest ? 'inline-block' : 'none';
+
+  const goalDefs = [
+    { key:'gym',      icon:'🏋️', name:'Gym / Soccer' },
+    { key:'eat',      icon:'🥗', name:'Eat Healthy' },
+    { key:'business', icon:'💼', name:'Work on Business' }
+  ];
+
+  document.getElementById('modalGoals').innerHTML = goalDefs.map(({key, icon, name}) => {
+    let statusText, statusCls;
+    if(!day){ statusText = 'No data'; statusCls = 'na'; }
+    else if(key === 'gym' && day.rest){ statusText = 'Rest day'; statusCls = 'na'; }
+    else if(day[key]){ statusText = 'Completed ✓'; statusCls = 'done'; }
+    else { statusText = 'Missed'; statusCls = 'missed'; }
+    return `<div class="modal-goal">
+      <div class="mg-icon">${icon}</div>
+      <div class="mg-name">${name}</div>
+      <div class="mg-status ${statusCls}">${statusText}</div>
+    </div>`;
+  }).join('');
+
+  // Meta chips: score + weight
+  const done = day ? ((day.rest?0:(day.gym?1:0))+(day.eat?1:0)+(day.business?1:0)) : 0;
+  const total = day && day.rest ? 2 : 3;
+  const scoreHtml = `<div class="modal-chip"><div class="chip-label">Score</div><div class="chip-val">${day ? done+' / '+total : '—'}</div></div>`;
+  const weightHtml = `<div class="modal-chip"><div class="chip-label">Weight</div><div class="chip-val">${day && day.weight ? day.weight+' lbs' : '—'}</div></div>`;
+  document.getElementById('modalMeta').innerHTML = scoreHtml + weightHtml;
+
+  const notesWrap = document.getElementById('modalNotesWrap');
+  if(day && day.notes && day.notes.trim()){
+    document.getElementById('modalNotes').textContent = day.notes;
+    notesWrap.style.display = 'block';
+  } else {
+    notesWrap.style.display = 'none';
+  }
+
+  modalOverlay.classList.add('open');
 }
 
 // Notes restore
