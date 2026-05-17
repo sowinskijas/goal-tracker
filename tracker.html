@@ -1419,20 +1419,25 @@ photoInput.addEventListener('change', async () => {
     return;
   }
 
-  ta.placeholder = 'Reading label with Google Vision…';
+  ta.placeholder = 'Reading label… please wait';
 
   try {
     const text = await readWithGoogleVision(file);
-    const lower = text.toLowerCase();
-    const idx = lower.search(/ingredients?\s*:/);
-    ta.value = (idx >= 0 ? text.slice(idx) : text).trim();
-    ta.placeholder = 'Ingredients auto-filled — edit if needed';
+    if(!text || !text.trim()){
+      ta.placeholder = 'OCR returned no text — try a clearer photo closer to the label';
+    } else {
+      const lower = text.toLowerCase();
+      const idx = lower.search(/ingredients?\s*:/);
+      ta.value = (idx >= 0 ? text.slice(idx) : text).trim();
+      ta.placeholder = 'Edit if needed';
+    }
   } catch(e) {
     if(e.message === 'no_key'){
-      ta.placeholder = 'Enter your Vision API key above';
+      ta.placeholder = 'Enter your OCR key above';
       document.getElementById('visionKeyRow').style.display='block';
     } else {
-      ta.placeholder = 'Vision error: ' + e.message + ' — type ingredients manually or retake photo';
+      ta.value = '';
+      ta.placeholder = 'Error: ' + e.message;
     }
   } finally {
     ta.disabled = false;
