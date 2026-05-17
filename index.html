@@ -347,6 +347,81 @@ h1,h2,h3{font-family:"Cormorant Garamond",serif;font-weight:600;}
 .mdot.m-hit{background:var(--gold);}
 .mdot.m-rest{background:var(--slate);opacity:0.7;}
 
+/* ── Ingredient Scanner ── */
+.scanner-desc{font-size:0.78rem;color:var(--text-mid);line-height:1.6;margin-bottom:18px;}
+.photo-zone{
+  border:2px dashed var(--border);border-radius:var(--radius);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;padding:20px;margin-bottom:16px;cursor:pointer;
+  transition:border-color 0.15s;min-height:80px;position:relative;overflow:hidden;
+}
+.photo-zone:hover{border-color:var(--border-hover);}
+.photo-zone.has-photo{padding:0;border-style:solid;}
+.photo-zone img{width:100%;border-radius:5px;display:block;}
+.photo-zone-label{font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-mid);}
+.photo-zone-icon{font-size:1.8rem;}
+.photo-retake{
+  position:absolute;top:8px;right:8px;
+  background:rgba(0,0,0,0.65);border:1px solid var(--border);
+  border-radius:20px;padding:4px 10px;
+  font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
+  color:#fff;cursor:pointer;
+}
+.scanner-label{
+  display:block;font-size:0.68rem;font-weight:700;letter-spacing:0.16em;
+  text-transform:uppercase;color:var(--text-mid);margin-bottom:8px;
+}
+.scanner-textarea{
+  width:100%;min-height:90px;
+  background:var(--charcoal-3);border:1px solid var(--border);
+  border-radius:var(--radius);color:#fff;
+  font-family:"Raleway",sans-serif;font-size:0.85rem;
+  padding:12px 14px;resize:vertical;outline:none;
+  transition:border-color 0.15s;line-height:1.6;margin-bottom:14px;
+}
+.scanner-textarea:focus{border-color:var(--gold);}
+.scanner-textarea::placeholder{color:var(--slate);}
+.scanner-btn{
+  width:100%;padding:13px;
+  background:linear-gradient(135deg,var(--gold),var(--gold-light));
+  color:#000;border:none;border-radius:var(--radius);
+  font-family:"Raleway",sans-serif;font-size:0.78rem;font-weight:700;
+  letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;
+  transition:opacity 0.15s,transform 0.1s;
+}
+.scanner-btn:hover{opacity:0.9;}
+.scanner-btn:active{transform:scale(0.98);}
+.score-result{margin-top:20px;}
+.score-top{display:flex;align-items:center;gap:20px;margin-bottom:16px;}
+.score-ring{
+  width:80px;height:80px;border-radius:50%;flex-shrink:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border:3px solid var(--gold);position:relative;
+  background:var(--charcoal-3);
+}
+.score-ring.grade-great{border-color:#4caf7d;}
+.score-ring.grade-good{border-color:var(--gold);}
+.score-ring.grade-ok{border-color:#e0a05c;}
+.score-ring.grade-poor{border-color:var(--red);}
+.score-num{font-family:"Cormorant Garamond",serif;font-size:1.8rem;font-weight:700;line-height:1;color:#fff;}
+.score-denom{font-size:0.6rem;color:var(--text-mid);font-weight:700;}
+.score-right{}
+.score-grade-label{font-family:"Cormorant Garamond",serif;font-size:1.4rem;font-weight:600;color:#fff;margin-bottom:4px;}
+.score-grade-label.grade-great{color:#4caf7d;}
+.score-grade-label.grade-good{color:var(--gold-light);}
+.score-grade-label.grade-ok{color:#e0a05c;}
+.score-grade-label.grade-poor{color:var(--red);}
+.score-summary{font-size:0.78rem;color:var(--text-mid);line-height:1.55;}
+.score-flags{display:flex;flex-direction:column;gap:6px;}
+.score-flag{
+  display:flex;align-items:flex-start;gap:10px;
+  background:var(--charcoal-3);border-radius:5px;padding:10px 12px;
+  font-size:0.78rem;line-height:1.5;
+}
+.flag-icon{font-size:0.9rem;flex-shrink:0;margin-top:1px;}
+.flag-text{color:var(--text-light);}
+.flag-text strong{color:#fff;}
+
 /* ── Day Modal ── */
 .modal-overlay{
   position:fixed;inset:0;background:rgba(0,0,0,0.75);
@@ -544,6 +619,39 @@ h1,h2,h3{font-family:"Cormorant Garamond",serif;font-weight:600;}
     <div class="ai-tips" id="aiTips" style="display:none;"></div>
 
     <button class="ai-generate-btn" id="aiGenerateBtn">✦ Generate Today's Debrief</button>
+  </div>
+
+  <!-- Ingredient Scanner -->
+  <div class="card">
+    <div class="card-title">Ingredient Scanner</div>
+    <p class="scanner-desc">Snap a photo of a food label, then type or paste the ingredients to get a health score.</p>
+
+    <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none">
+    <div class="photo-zone" id="photoZone">
+      <div class="photo-zone-icon">📷</div>
+      <div class="photo-zone-label">Tap to take photo or upload</div>
+      <img id="photoImg" style="display:none">
+      <div class="photo-retake" id="photoRetake" style="display:none">Retake</div>
+    </div>
+
+    <label class="scanner-label" for="ingredientsInput">Ingredients List</label>
+    <textarea class="scanner-textarea" id="ingredientsInput" placeholder="e.g. Water, Whole Grain Oats, High Fructose Corn Syrup, Salt, Natural Flavors..."></textarea>
+
+    <button class="scanner-btn" id="scoreBtn">✦ Get Health Score</button>
+
+    <div class="score-result" id="scoreResult" style="display:none">
+      <div class="score-top">
+        <div class="score-ring" id="scoreRing">
+          <div class="score-num" id="scoreNum">—</div>
+          <div class="score-denom">/ 100</div>
+        </div>
+        <div class="score-right">
+          <div class="score-grade-label" id="scoreGrade"></div>
+          <div class="score-summary" id="scoreSummary"></div>
+        </div>
+      </div>
+      <div class="score-flags" id="scoreFlags"></div>
+    </div>
   </div>
 
   <!-- Calendar -->
@@ -1221,6 +1329,144 @@ document.getElementById('aiGenerateBtn').addEventListener('click',()=>{
     btn.disabled=false;
     btn.textContent=currentTab==='debrief'?'✦ Refresh Debrief':'✦ Refresh Insights';
   },320);
+});
+
+// ── Ingredient Scanner ────────────────────────────────────────────────────
+const photoInput = document.getElementById('photoInput');
+const photoZone  = document.getElementById('photoZone');
+const photoImg   = document.getElementById('photoImg');
+const photoRetake= document.getElementById('photoRetake');
+
+photoZone.addEventListener('click', () => photoInput.click());
+photoRetake.addEventListener('click', e => { e.stopPropagation(); photoInput.click(); });
+
+photoInput.addEventListener('change', () => {
+  const file = photoInput.files[0];
+  if(!file) return;
+  const url = URL.createObjectURL(file);
+  photoImg.src = url;
+  photoImg.style.display = 'block';
+  photoZone.classList.add('has-photo');
+  photoZone.querySelector('.photo-zone-icon').style.display = 'none';
+  photoZone.querySelector('.photo-zone-label').style.display = 'none';
+  photoRetake.style.display = 'block';
+});
+
+// ── Scoring data ──────────────────────────────────────────────────────────
+const BAD_INGREDIENTS = [
+  {match:/high.fructose.corn.syrup/i,      pts:-18, label:'High Fructose Corn Syrup', why:'Linked to insulin resistance and inflammation.'},
+  {match:/partially.hydrogenated/i,        pts:-20, label:'Partially Hydrogenated Oils', why:'Trans fats — raise LDL cholesterol, lower HDL.'},
+  {match:/hydrogenated.oil/i,              pts:-12, label:'Hydrogenated Oil', why:'Contains residual trans fats.'},
+  {match:/sodium.nitrite|sodium.nitrate/i, pts:-14, label:'Sodium Nitrite/Nitrate', why:'Preservatives linked to increased cancer risk.'},
+  {match:/red\s*4[0-9]|yellow\s*[56]|blue\s*[12]|caramel.color/i, pts:-8, label:'Artificial Food Dye', why:'Linked to hyperactivity; some have carcinogen concerns.'},
+  {match:/artificial.flavor/i,             pts:-5,  label:'Artificial Flavors', why:'Synthetic chemicals; transparency concerns.'},
+  {match:/artificial.sweetener|aspartame|saccharin|acesulfame/i, pts:-8, label:'Artificial Sweetener', why:'May disrupt gut microbiome; mixed research.'},
+  {match:/sucralose/i,                     pts:-6,  label:'Sucralose', why:'May reduce beneficial gut bacteria.'},
+  {match:/bha|bht\b/i,                     pts:-10, label:'BHA / BHT', why:'Synthetic antioxidants; possible endocrine disruptors.'},
+  {match:/sodium.benzoate|potassium.benzoate/i, pts:-9, label:'Benzoate Preservatives', why:'Can form benzene (carcinogen) with Vitamin C.'},
+  {match:/carrageenan/i,                   pts:-8,  label:'Carrageenan', why:'May cause gut inflammation in some people.'},
+  {match:/enriched.flour|bleached.flour/i, pts:-6,  label:'Enriched/Bleached Flour', why:'Stripped of nutrients; spikes blood sugar.'},
+  {match:/corn.syrup(?!.solid)/i,          pts:-10, label:'Corn Syrup', why:'High glycemic index; contributes to blood sugar spikes.'},
+  {match:/soybean.oil|canola.oil|vegetable.oil|sunflower.oil/i, pts:-7, label:'Refined Seed Oil', why:'High in omega-6; pro-inflammatory at scale.'},
+  {match:/msg|monosodium.glutamate/i,      pts:-5,  label:'MSG', why:'Generally safe but some people report sensitivity.'},
+  {match:/maltodextrin/i,                  pts:-6,  label:'Maltodextrin', why:'High glycemic; may disrupt gut bacteria.'},
+  {match:/\bsugar\b/i,                     pts:-8,  label:'Added Sugar', why:'Watch total sugar — contributes to inflammation and weight gain.'},
+  {match:/dextrose|fructose|sucrose|glucose/i, pts:-6, label:'Added Sugars (other)', why:'Various forms of added sugar.'},
+  {match:/modified.starch|modified.food.starch/i, pts:-4, label:'Modified Starch', why:'Highly processed; low nutritional value.'},
+  {match:/polysorbate|carboxymethylcellulose|xanthan/i, pts:-4, label:'Emulsifier', why:'Some emulsifiers may affect gut barrier health.'},
+];
+
+const GOOD_INGREDIENTS = [
+  {match:/whole.grain|whole.wheat|whole.oat/i,      pts:8,  label:'Whole Grain', why:'Fiber-rich, supports digestion and blood sugar.'},
+  {match:/olive.oil/i,                              pts:8,  label:'Olive Oil', why:'Heart-healthy monounsaturated fats.'},
+  {match:/wild.caught|wild-caught/i,                pts:7,  label:'Wild-Caught Fish', why:'High omega-3, lean protein.'},
+  {match:/spinach|kale|broccoli|arugula|chard/i,   pts:7,  label:'Dark Leafy Greens', why:'Dense in micronutrients and antioxidants.'},
+  {match:/almonds|walnuts|cashews|pecans/i,         pts:6,  label:'Nuts', why:'Healthy fats, protein, fiber.'},
+  {match:/chia.seed|flax.seed|hemp.seed/i,          pts:7,  label:'Seeds', why:'Omega-3s, fiber, and minerals.'},
+  {match:/blueberr|strawberr|raspberr|blackberr/i, pts:6,  label:'Berries', why:'High in antioxidants.'},
+  {match:/chickpea|lentil|black.bean|kidney.bean/i, pts:6, label:'Legumes', why:'Fiber, plant protein, low glycemic.'},
+  {match:/quinoa/i,                                 pts:7,  label:'Quinoa', why:'Complete protein, gluten-free grain.'},
+  {match:/coconut.oil/i,                            pts:4,  label:'Coconut Oil', why:'MCTs; better than seed oils, still saturated.'},
+  {match:/apple.cider.vinegar/i,                    pts:5,  label:'Apple Cider Vinegar', why:'May support blood sugar regulation.'},
+  {match:/turmeric|ginger|cinnamon/i,               pts:5,  label:'Anti-inflammatory Spice', why:'Natural anti-inflammatory properties.'},
+  {match:/greek.yogurt|plain.yogurt/i,              pts:6,  label:'Yogurt', why:'Probiotics and protein.'},
+  {match:/egg/i,                                    pts:5,  label:'Eggs', why:'Complete protein, nutrient-dense.'},
+  {match:/sweet.potato/i,                           pts:6,  label:'Sweet Potato', why:'Complex carb, beta-carotene, fiber.'},
+  {match:/avocado/i,                                pts:7,  label:'Avocado', why:'Healthy monounsaturated fat, potassium.'},
+];
+
+function scoreIngredients(text){
+  if(!text.trim()) return null;
+
+  let score = 70; // baseline for a neutral product
+  const flags = [];
+  const positives = [];
+  const seen = new Set();
+
+  BAD_INGREDIENTS.forEach(({match, pts, label, why}) => {
+    if(match.test(text) && !seen.has(label)){
+      seen.add(label);
+      score += pts;
+      flags.push({type:'bad', label, why, pts});
+    }
+  });
+
+  GOOD_INGREDIENTS.forEach(({match, pts, label, why}) => {
+    if(match.test(text) && !seen.has(label)){
+      seen.add(label);
+      score += pts;
+      positives.push({type:'good', label, why, pts});
+    }
+  });
+
+  score = Math.max(0, Math.min(100, score));
+
+  let grade, gradeClass, summary;
+  if(score >= 80){
+    grade='Great Choice'; gradeClass='grade-great';
+    summary='Clean ingredient list. Few or no red flags — this is solid whole-food territory.';
+  } else if(score >= 65){
+    grade='Pretty Good'; gradeClass='grade-good';
+    summary='Mostly solid with a few things to watch. Fine in moderation.';
+  } else if(score >= 45){
+    grade='So-So'; gradeClass='grade-ok';
+    summary='Some concerning ingredients. Worth looking for a cleaner alternative.';
+  } else {
+    grade='Avoid'; gradeClass='grade-poor';
+    summary='Multiple red flags. Highly processed — try to find a whole-food substitute.';
+  }
+
+  return {score, grade, gradeClass, summary, flags, positives};
+}
+
+document.getElementById('scoreBtn').addEventListener('click', () => {
+  const text = document.getElementById('ingredientsInput').value;
+  if(!text.trim()){ document.getElementById('ingredientsInput').focus(); return; }
+
+  const result = scoreIngredients(text);
+  if(!result) return;
+
+  const resultEl = document.getElementById('scoreResult');
+  document.getElementById('scoreNum').textContent = result.score;
+  document.getElementById('scoreRing').className = 'score-ring ' + result.gradeClass;
+  document.getElementById('scoreGrade').textContent = result.grade;
+  document.getElementById('scoreGrade').className = 'score-grade-label ' + result.gradeClass;
+  document.getElementById('scoreSummary').textContent = result.summary;
+
+  const flagsEl = document.getElementById('scoreFlags');
+  const allFlags = [
+    ...result.flags.map(f => ({...f, icon:'🚩'})),
+    ...result.positives.map(f => ({...f, icon:'✅'}))
+  ];
+  flagsEl.innerHTML = allFlags.length ? allFlags.map(f =>
+    `<div class="score-flag">
+      <div class="flag-icon">${f.icon}</div>
+      <div class="flag-text"><strong>${f.label}</strong> — ${f.why}</div>
+    </div>`
+  ).join('') : '<div class="score-flag"><div class="flag-icon">ℹ️</div><div class="flag-text">No specific ingredients matched our database. Try pasting the full ingredients list.</div></div>';
+
+  resultEl.style.display = 'block';
+  resultEl.scrollIntoView({behavior:'smooth', block:'nearest'});
 });
 
 // Notes restore
