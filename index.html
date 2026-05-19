@@ -621,46 +621,6 @@ h1,h2,h3{font-family:"Cormorant Garamond",serif;font-weight:600;}
     <button class="ai-generate-btn" id="aiGenerateBtn">✦ Generate Today's Debrief</button>
   </div>
 
-  <!-- Ingredient Scanner -->
-  <div class="card">
-    <div class="card-title">Ingredient Scanner</div>
-    <p class="scanner-desc">Snap a photo of a food label — OCR will read it automatically, then score the ingredients. Free API key at <strong>ocr.space/OCRAPI</strong></p>
-    <div id="visionKeyRow" style="display:none;margin-bottom:14px;">
-      <label class="scanner-label">OCR.space API Key</label>
-      <div style="display:flex;gap:8px;">
-        <input type="password" id="visionKeyInput" class="scanner-textarea" style="min-height:0;padding:10px 14px;margin-bottom:0;" placeholder="K8...">
-        <button class="log-btn" id="visionKeySave">Save</button>
-      </div>
-    </div>
-
-    <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none">
-    <div class="photo-zone" id="photoZone">
-      <div class="photo-zone-icon">📷</div>
-      <div class="photo-zone-label">Tap to take photo or upload</div>
-      <img id="photoImg" style="display:none">
-      <div class="photo-retake" id="photoRetake" style="display:none">Retake</div>
-    </div>
-
-    <label class="scanner-label" for="ingredientsInput">Ingredients List</label>
-    <textarea class="scanner-textarea" id="ingredientsInput" placeholder="e.g. Water, Whole Grain Oats, High Fructose Corn Syrup, Salt, Natural Flavors..."></textarea>
-
-    <button class="scanner-btn" id="scoreBtn">✦ Get Health Score</button>
-
-    <div class="score-result" id="scoreResult" style="display:none">
-      <div class="score-top">
-        <div class="score-ring" id="scoreRing">
-          <div class="score-num" id="scoreNum">—</div>
-          <div class="score-denom">/ 100</div>
-        </div>
-        <div class="score-right">
-          <div class="score-grade-label" id="scoreGrade"></div>
-          <div class="score-summary" id="scoreSummary"></div>
-        </div>
-      </div>
-      <div class="score-flags" id="scoreFlags"></div>
-    </div>
-  </div>
-
   <!-- Calendar -->
   <div class="card" id="calCard">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;cursor:pointer;" id="calToggleRow">
@@ -694,13 +654,17 @@ h1,h2,h3{font-family:"Cormorant Garamond",serif;font-weight:600;}
       <div class="modal-date" id="modalDate"></div>
       <button class="modal-close" id="modalClose">✕</button>
     </div>
-    <div id="modalRestBadge" class="modal-rest" style="display:none">Rest Day</div>
     <div class="modal-goals" id="modalGoals"></div>
-    <div class="modal-meta" id="modalMeta"></div>
-    <div id="modalNotesWrap" style="display:none">
-      <div class="modal-notes-label">Notes</div>
-      <div class="modal-notes-text" id="modalNotes"></div>
+    <div class="modal-meta" id="modalMeta" style="margin-bottom:14px;"></div>
+    <div style="margin-bottom:14px;">
+      <div class="modal-notes-label">Weight (lbs)</div>
+      <input type="number" id="modalWeightInput" class="weight-input" style="width:100%;margin-top:6px;" step="0.1" min="50" max="400" placeholder="—">
     </div>
+    <div style="margin-bottom:18px;">
+      <div class="modal-notes-label">Notes</div>
+      <textarea id="modalNotesInput" style="width:100%;margin-top:6px;background:var(--charcoal-3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text-light);font-size:0.85rem;padding:10px 14px;resize:vertical;min-height:72px;font-family:inherit;" placeholder="How did the day go?"></textarea>
+    </div>
+    <button class="log-btn" id="modalSaveBtn" style="width:100%;padding:13px;">Save Changes</button>
   </div>
 </div>
 
@@ -1030,41 +994,75 @@ document.getElementById('modalClose').addEventListener('click',closeModal);
 modalOverlay.addEventListener('click',e=>{if(e.target===modalOverlay)closeModal();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 function closeModal(){ modalOverlay.classList.remove('open'); }
+let _modalKey = null;
 function openModal(dateKey){
+  _modalKey = dateKey;
   const date=new Date(dateKey+'T12:00:00');
   const isToday=dateKey===TODAY;
-  const day=data[dateKey];
+  const day=data[dateKey]||{gym:false,soccer:false,eat:false,business:false,rest:false,weight:null,notes:''};
+
   document.getElementById('modalDate').textContent=date.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})+(isToday?' — Today':'');
-  document.getElementById('modalRestBadge').style.display=day&&day.rest?'inline-block':'none';
-  // Workout row — show which activity was logged
-  const woIcon = day&&day.gym&&day.soccer?'🔥':day&&day.soccer?'⚽':'🏋️';
-  const woName = day&&day.gym&&day.soccer?'Gym + Soccer':day&&day.soccer?'Soccer':'Gym';
-  const workoutGoals = [{icon:woIcon,name:'Workout — '+woName,done:day&&workoutDone(day),rest:day&&day.rest}];
-  const otherGoals = [{key:'eat',icon:'🥗',name:'Eat Healthy'},{key:'business',icon:'💼',name:'Work on Business'}];
-  document.getElementById('modalGoals').innerHTML=[
-    ...workoutGoals.map(({icon,name,done:d,rest})=>{
-      const s=!day?'No data':rest?'Rest day':d?'Completed ✓':'Missed';
-      const c=!day||rest?'na':d?'done':'missed';
-      return `<div class="modal-goal"><div class="mg-icon">${icon}</div><div class="mg-name">${name}</div><div class="mg-status ${c}">${s}</div></div>`;
-    }),
-    ...otherGoals.map(({key,icon,name})=>{
-      const s=!day?'No data':day[key]?'Completed ✓':'Missed';
-      const c=!day?'na':day[key]?'done':'missed';
-      return `<div class="modal-goal"><div class="mg-icon">${icon}</div><div class="mg-name">${name}</div><div class="mg-status ${c}">${s}</div></div>`;
-    })
-  ].join('');
-  const done=day?(day.rest?0:(workoutDone(day)?1:0))+(day.eat?1:0)+(day.business?1:0):0;
-  const total=day&&day.rest?2:3;
+
+  // Editable goal toggles
+  const goals=[
+    {key:'workout',icon:'🏋️',name:'Workout',done:workoutDone(day),rest:day.rest},
+    {key:'eat',icon:'🥗',name:'Eat Healthy',done:day.eat},
+    {key:'business',icon:'💼',name:'Work on Business',done:day.business},
+    {key:'rest',icon:'😴',name:'Rest Day',done:day.rest},
+  ];
+  document.getElementById('modalGoals').innerHTML=goals.map(({key,icon,name,done:d,rest})=>{
+    const active=d?'done':'';
+    return `<div class="modal-goal" data-mkey="${key}" style="cursor:pointer;border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;transition:background 0.15s;" onclick="toggleModalGoal('${key}')">
+      <div class="mg-icon">${icon}</div>
+      <div class="mg-name">${name}</div>
+      <div class="mg-status ${active}">${d?'✓':''}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('modalWeightInput').value=day.weight||'';
+  document.getElementById('modalNotesInput').value=day.notes||'';
+
+  const done=(workoutDone(day)?1:0)+(day.eat?1:0)+(day.business?1:0);
+  const total=day.rest?2:3;
   document.getElementById('modalMeta').innerHTML=
-    `<div class="modal-chip"><div class="chip-label">Score</div><div class="chip-val">${day?done+' / '+total:'—'}</div></div>`+
-    `<div class="modal-chip"><div class="chip-label">Weight</div><div class="chip-val">${day&&day.weight?day.weight+' lbs':'—'}</div></div>`;
-  const notesWrap=document.getElementById('modalNotesWrap');
-  if(day&&day.notes&&day.notes.trim()){
-    document.getElementById('modalNotes').textContent=day.notes;
-    notesWrap.style.display='block';
-  } else notesWrap.style.display='none';
+    `<div class="modal-chip"><div class="chip-label">Score</div><div class="chip-val" id="modalScore">${done} / ${total}</div></div>`;
+
   modalOverlay.classList.add('open');
 }
+
+function toggleModalGoal(key){
+  if(!_modalKey) return;
+  const day=data[_modalKey]||{gym:false,soccer:false,eat:false,business:false,rest:false,weight:null,notes:''};
+  if(key==='workout'){
+    // cycle: none → gym → soccer → both → none
+    if(!day.gym&&!day.soccer){day.gym=true;day.soccer=false;}
+    else if(day.gym&&!day.soccer){day.gym=false;day.soccer=true;}
+    else if(!day.gym&&day.soccer){day.gym=true;day.soccer=true;}
+    else{day.gym=false;day.soccer=false;}
+  } else if(key==='rest'){
+    day.rest=!day.rest;
+  } else {
+    day[key]=!day[key];
+  }
+  data[_modalKey]=day;
+  saveData(data);
+  if(_modalKey===TODAY){today=day;}
+  render();
+  openModal(_modalKey);
+}
+
+document.getElementById('modalSaveBtn').addEventListener('click',()=>{
+  if(!_modalKey) return;
+  const day=data[_modalKey]||{gym:false,soccer:false,eat:false,business:false,rest:false,weight:null,notes:''};
+  const w=parseFloat(document.getElementById('modalWeightInput').value);
+  day.weight=isNaN(w)?null:w;
+  day.notes=document.getElementById('modalNotesInput').value.trim();
+  data[_modalKey]=day;
+  saveData(data);
+  if(_modalKey===TODAY){today=day;}
+  render();
+  closeModal();
+});
 
 // ── AI Coach (no API key needed) ──────────────────────────────────────────
 let currentTab = 'debrief';
